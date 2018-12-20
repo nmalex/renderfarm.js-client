@@ -1,0 +1,31 @@
+{
+  "name": "renderfarm",
+  "version": "1.0.9",
+  "description": "Javascript client for rendering farm",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "tsc & jasmine --config=jasmine.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nmalex/renderfarm.js.git"
+  },
+  "author": "master.irven@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nmalex/renderfarm.js/issues"
+  },
+  "homepage": "https://github.com/nmalex/renderfarm.js#readme",
+  "dependencies": {
+    "lz-string": "^1.4.4",
+    "three": "^0.99.0"
+  },
+  "devDependencies": {
+    "@types/jasmine": "^2.8.11",
+    "@types/mongodb": "^3.1.14",
+    "@types/node": "^10.12.2",
+    "babel-cli": "^6.26.0",
+    "reflect-metadata": "^0.1.12"
+  }
+}
