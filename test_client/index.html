@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>test client</title>
+<script src="../dist/renderfarm.js"></script>
+
+<script>
+    var client = new RFJS();
+    console.log("Connecting to render farm...");
+    client.Connect().then(function(){
+        console.log("Connected!");
+    }).catch(function(){});
+</script>
+</head>
+<body>
+
+</body>
+</html>

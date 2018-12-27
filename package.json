@@ -1,12 +1,15 @@
 {
   "name": "renderfarm",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "three.js server side rendering client",
   "main": "dist/index.js",
+
   "scripts": {
-    "build": "tsc",
+    "build": "tsc & rollup -c",
+    "dev": "tsc & rollup -c -w",
     "test": "tsc & jasmine --config=jasmine.json"
   },
+
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nmalex/renderfarm.js-client.git"
@@ -24,7 +27,9 @@
   "devDependencies": {
     "@types/jasmine": "^2.8.11",
     "@types/node": "^10.12.2",
-    "babel-cli": "^6.26.0",
-    "reflect-metadata": "^0.1.12"
+    "reflect-metadata": "^0.1.12",
+    "rollup": "^0.68.1",
+    "rollup-plugin-commonjs": "^9.2.0",
+    "rollup-plugin-node-resolve": "^4.0.0"
   }
 }
