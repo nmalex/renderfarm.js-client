@@ -1,7 +1,7 @@
 import { Session } from "./Session";
 import { Scene } from "./Scene";
 
-const settings = require("./settings");
+const settings = require("../settings");
 const axios = require("axios");
 
 class Client {
