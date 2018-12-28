@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/nmalex/renderfarm.js-client#readme",
   "dependencies": {
+    "axios": "^0.18.0",
     "lz-string": "^1.4.4",
     "three": "^0.99.0"
   },

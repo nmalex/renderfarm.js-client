@@ -5,11 +5,18 @@
 <script src="../bundle/renderfarm.js"></script>
 
 <script>
-    var client = new RFJS.Client();
-    console.log("Connecting to render farm...");
-    client.Connect().then(function(){
+    var apiKey = "75f5-4d53-b0f4";
+    var workspace = "55a0bd33-9f15-4bc0-a482-17899eb67af3";
+    var host = "mel.mbnsay.com";
+
+    var client = new RFJS.Client(apiKey, workspace);
+    console.log("Connecting to render farm: " + host);
+
+    client.Connect(host).then(function(){
         console.log("Connected!");
-    }).catch(function(){});
+    }).catch(function(err){
+        console.log(err.message);
+    });
 </script>
 </head>
 <body>
