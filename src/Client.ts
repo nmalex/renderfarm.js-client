@@ -1,16 +1,11 @@
-"use strict";
-
 import { Session } from "./Session";
 
-export default class RFJS {
+class Client {
     private session: Session;
-
     public constructed: boolean;
-
     public constructor() {
         this.constructed = true;
     }
-
     public Connect(): Promise<boolean> {
         return new Promise<boolean>(function (resolve, reject) {
             setTimeout(function () {
@@ -18,7 +13,6 @@ export default class RFJS {
             }, 1000);
         }.bind(this));
     }
-
     public Open(): Promise<boolean> {
         return new Promise<boolean>(function (resolve, reject) {
             this.session = new Session();
@@ -34,3 +28,5 @@ export default class RFJS {
         }.bind(this));
     }
 }
+
+export { Client }

@@ -1,2 +1,6 @@
 src/
 *.tsconfig
+dist/browser.js
+dist/*.spec.js
+dist/*.Spec.js
+test_client/

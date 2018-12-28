@@ -2,10 +2,10 @@
 <html>
 <head>
 <title>test client</title>
-<script src="../dist/renderfarm.js"></script>
+<script src="../bundle/renderfarm.js"></script>
 
 <script>
-    var client = new RFJS();
+    var client = new RFJS.Client();
     console.log("Connecting to render farm...");
     client.Connect().then(function(){
         console.log("Connected!");
