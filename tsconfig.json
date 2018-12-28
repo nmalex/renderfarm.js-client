@@ -2,7 +2,7 @@
     "compilerOptions": {
         "outDir": "dist",
         "target": "es5",
-        "lib": ["es6"],
+        "lib": ["es2018", "dom"],
         "types": ["node", "jasmine", "reflect-metadata"],
         "module": "commonjs",
         "moduleResolution": "node",
