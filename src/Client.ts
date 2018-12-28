@@ -1,46 +1,53 @@
 import { Session } from "./Session";
 
+const settings = require("./settings");
 const axios = require("axios");
-
-const apiVersion = 1;
 
 class Client {
     private session: Session;
     private apiKey: string;
-    private workspace: string;
+    private workspaceGuid: string;
     private baseUrl: string;
 
-    public constructor(apiKey: string, workspace: string) {
+    public constructor(apiKey: string, workspaceGuid: string) {
         this.apiKey = apiKey;
-        this.workspace = workspace;
+        this.workspaceGuid = workspaceGuid;
     }
 
     public Connect(host: string, port: number): Promise<any> {
         if (port) {
-            this.baseUrl = `https://${host}:${port}/v${apiVersion}`;
+            this.baseUrl = `https://${host}:${port}/v${settings.apiVersion}`;
         } else {
-            this.baseUrl = `https://${host}/v${apiVersion}`;
+            this.baseUrl = `https://${host}/v${settings.apiVersion}`;
         }
 
+        this.session = new Session();
+        return this.session.Open(this.baseUrl, this.apiKey, this.workspaceGuid);
+    }
+
+    public OpenScene(sceneFilename: string): Promise<any> {
         return new Promise(function(resolve, reject) {
             axios.post(`${this.baseUrl}/session`, {
-                api_key: this.apiKey, 
-                workspace: this.workspace
-            }).then(function (response) {
-                if (!response || response.status !== 200) {
-                    reject(); //todo: provide error
-                    return;
-                }
-
-                if (response.data && response.data.id) { //todo: be consistent, return guid
-                    resolve(true); //todo: provide some success object
+                scene_filename: sceneFilename,
+                session: this.session
+            }).then(function (response: any) {
+                if (response.data && response.data.gid) {
+                    this.session = response.data.gid;
+                    resolve(response.data);
+                } else if (response.data && response.data.error) {
+                    reject(response.data.error);
                 } else {
-                    console.log(response.data);
-                    reject(response.data);
+                    reject("failed to handle server response");
                 }
-            }).catch(function (error) { //todo: streamline how error is returned from api
-                console.log(" >> here: ", error);
-                reject(error);
+            }).catch(function (err: any) {
+                if (err.message) {
+                    reject(err);
+                    return;
+                } else if (err.response && err.response.data && err.response.error) {
+                    reject(err.response.error);
+                } else {
+                    reject(err);
+                }
             }); // end of axios.post promise
 
         }.bind(this));

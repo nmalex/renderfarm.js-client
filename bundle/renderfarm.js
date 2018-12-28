@@ -1,39 +1,51 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var Session_1 = require("./Session");
+var settings = require("./settings");
 var axios = require("axios");
-var apiVersion = 1;
 var Client = /** @class */ (function () {
-    function Client(apiKey, workspace) {
+    function Client(apiKey, workspaceGuid) {
         this.apiKey = apiKey;
-        this.workspace = workspace;
+        this.workspaceGuid = workspaceGuid;
     }
     Client.prototype.Connect = function (host, port) {
         if (port) {
-            this.baseUrl = "https://" + host + ":" + port + "/v" + apiVersion;
+            this.baseUrl = "https://" + host + ":" + port + "/v" + settings.apiVersion;
         }
         else {
-            this.baseUrl = "https://" + host + "/v" + apiVersion;
+            this.baseUrl = "https://" + host + "/v" + settings.apiVersion;
         }
+        this.session = new Session_1.Session();
+        return this.session.Open(this.baseUrl, this.apiKey, this.workspaceGuid);
+    };
+    Client.prototype.OpenScene = function (sceneFilename) {
         return new Promise(function (resolve, reject) {
             axios.post(this.baseUrl + "/session", {
-                api_key: this.apiKey,
-                workspace: this.workspace
+                scene_filename: sceneFilename,
+                session: this.session
             }).then(function (response) {
-                if (!response || response.status !== 200) {
-                    reject(); //todo: provide error
-                    return;
+                if (response.data && response.data.gid) {
+                    this.session = response.data.gid;
+                    resolve(response.data);
                 }
-                if (response.data && response.data.id) { //todo: be consistent, return guid
-                    resolve(true); //todo: provide some success object
+                else if (response.data && response.data.error) {
+                    reject(response.data.error);
                 }
                 else {
-                    console.log(response.data);
-                    reject(response.data);
+                    reject("failed to handle server response");
                 }
-            }).catch(function (error) {
-                console.log(" >> here: ", error);
-                reject(error);
+            }).catch(function (err) {
+                if (err.message) {
+                    reject(err);
+                    return;
+                }
+                else if (err.response && err.response.data && err.response.error) {
+                    reject(err.response.error);
+                }
+                else {
+                    reject(err);
+                }
             }); // end of axios.post promise
         }.bind(this));
     };
@@ -41,7 +53,69 @@ var Client = /** @class */ (function () {
 }());
 exports.Client = Client;
 
-},{"axios":3}],2:[function(require,module,exports){
+},{"./Session":2,"./settings":4,"axios":5}],2:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var axios = require("axios");
+var Session = /** @class */ (function () {
+    function Session() {
+    }
+    Object.defineProperty(Session.prototype, "SessionGuid", {
+        get: function () {
+            return this._sessionGuid;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Session.prototype.Open = function (baseUrl, apiKey, workspaceGuid) {
+        return new Promise(function (resolve, reject) {
+            if (this._sessionGuid) {
+                reject("session already open");
+            }
+            axios.post(baseUrl + "/session", {
+                api_key: apiKey,
+                workspace: workspaceGuid
+            })
+                .then(function (response) {
+                if (response.data && response.data.guid) {
+                    this._sessionGuid = response.data.guid;
+                    resolve(response.data);
+                }
+                else if (response.data && response.data.error) {
+                    reject(response.data.error);
+                }
+                else {
+                    reject("failed to handle server response");
+                }
+            }.bind(this))
+                .catch(function (err) {
+                if (err.response && err.response.data && err.response.data.error) {
+                    reject(err.response.data.error);
+                }
+                else if (err.message) {
+                    reject(err.message);
+                }
+                else {
+                    reject(err);
+                }
+            }.bind(this)); // end of axios.post promise
+        }.bind(this));
+    };
+    Session.prototype.KeepAlive = function () {
+        return new Promise(function (resolve, reject) {
+            reject(); // todo: implement it
+        }.bind(this));
+    };
+    Session.prototype.Close = function () {
+        return new Promise(function (resolve, reject) {
+            reject(); // todo: implement it
+        }.bind(this));
+    };
+    return Session;
+}());
+exports.Session = Session;
+
+},{"axios":5}],3:[function(require,module,exports){
 (function (global){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -51,9 +125,14 @@ global["RFJS"] = {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./Client":1}],3:[function(require,module,exports){
+},{"./Client":1}],4:[function(require,module,exports){
+module.exports = {
+    apiVersion: 1
+};
+
+},{}],5:[function(require,module,exports){
 module.exports = require('./lib/axios');
-},{"./lib/axios":5}],4:[function(require,module,exports){
+},{"./lib/axios":7}],6:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -237,7 +316,7 @@ module.exports = function xhrAdapter(config) {
 };
 
 }).call(this,require('_process'))
-},{"../core/createError":11,"./../core/settle":14,"./../helpers/btoa":18,"./../helpers/buildURL":19,"./../helpers/cookies":21,"./../helpers/isURLSameOrigin":23,"./../helpers/parseHeaders":25,"./../utils":27,"_process":29}],5:[function(require,module,exports){
+},{"../core/createError":13,"./../core/settle":16,"./../helpers/btoa":20,"./../helpers/buildURL":21,"./../helpers/cookies":23,"./../helpers/isURLSameOrigin":25,"./../helpers/parseHeaders":27,"./../utils":29,"_process":31}],7:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -291,7 +370,7 @@ module.exports = axios;
 // Allow use of default import syntax in TypeScript
 module.exports.default = axios;
 
-},{"./cancel/Cancel":6,"./cancel/CancelToken":7,"./cancel/isCancel":8,"./core/Axios":9,"./defaults":16,"./helpers/bind":17,"./helpers/spread":26,"./utils":27}],6:[function(require,module,exports){
+},{"./cancel/Cancel":8,"./cancel/CancelToken":9,"./cancel/isCancel":10,"./core/Axios":11,"./defaults":18,"./helpers/bind":19,"./helpers/spread":28,"./utils":29}],8:[function(require,module,exports){
 'use strict';
 
 /**
@@ -312,7 +391,7 @@ Cancel.prototype.__CANCEL__ = true;
 
 module.exports = Cancel;
 
-},{}],7:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 'use strict';
 
 var Cancel = require('./Cancel');
@@ -371,14 +450,14 @@ CancelToken.source = function source() {
 
 module.exports = CancelToken;
 
-},{"./Cancel":6}],8:[function(require,module,exports){
+},{"./Cancel":8}],10:[function(require,module,exports){
 'use strict';
 
 module.exports = function isCancel(value) {
   return !!(value && value.__CANCEL__);
 };
 
-},{}],9:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 'use strict';
 
 var defaults = require('./../defaults');
@@ -459,7 +538,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 
 module.exports = Axios;
 
-},{"./../defaults":16,"./../utils":27,"./InterceptorManager":10,"./dispatchRequest":12}],10:[function(require,module,exports){
+},{"./../defaults":18,"./../utils":29,"./InterceptorManager":12,"./dispatchRequest":14}],12:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -513,7 +592,7 @@ InterceptorManager.prototype.forEach = function forEach(fn) {
 
 module.exports = InterceptorManager;
 
-},{"./../utils":27}],11:[function(require,module,exports){
+},{"./../utils":29}],13:[function(require,module,exports){
 'use strict';
 
 var enhanceError = require('./enhanceError');
@@ -533,7 +612,7 @@ module.exports = function createError(message, config, code, request, response) 
   return enhanceError(error, config, code, request, response);
 };
 
-},{"./enhanceError":13}],12:[function(require,module,exports){
+},{"./enhanceError":15}],14:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -621,7 +700,7 @@ module.exports = function dispatchRequest(config) {
   });
 };
 
-},{"../cancel/isCancel":8,"../defaults":16,"./../helpers/combineURLs":20,"./../helpers/isAbsoluteURL":22,"./../utils":27,"./transformData":15}],13:[function(require,module,exports){
+},{"../cancel/isCancel":10,"../defaults":18,"./../helpers/combineURLs":22,"./../helpers/isAbsoluteURL":24,"./../utils":29,"./transformData":17}],15:[function(require,module,exports){
 'use strict';
 
 /**
@@ -644,7 +723,7 @@ module.exports = function enhanceError(error, config, code, request, response) {
   return error;
 };
 
-},{}],14:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 'use strict';
 
 var createError = require('./createError');
@@ -672,7 +751,7 @@ module.exports = function settle(resolve, reject, response) {
   }
 };
 
-},{"./createError":11}],15:[function(require,module,exports){
+},{"./createError":13}],17:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -694,7 +773,7 @@ module.exports = function transformData(data, headers, fns) {
   return data;
 };
 
-},{"./../utils":27}],16:[function(require,module,exports){
+},{"./../utils":29}],18:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -794,7 +873,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 module.exports = defaults;
 
 }).call(this,require('_process'))
-},{"./adapters/http":4,"./adapters/xhr":4,"./helpers/normalizeHeaderName":24,"./utils":27,"_process":29}],17:[function(require,module,exports){
+},{"./adapters/http":6,"./adapters/xhr":6,"./helpers/normalizeHeaderName":26,"./utils":29,"_process":31}],19:[function(require,module,exports){
 'use strict';
 
 module.exports = function bind(fn, thisArg) {
@@ -807,7 +886,7 @@ module.exports = function bind(fn, thisArg) {
   };
 };
 
-},{}],18:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 'use strict';
 
 // btoa polyfill for IE<10 courtesy https://github.com/davidchambers/Base64.js
@@ -845,7 +924,7 @@ function btoa(input) {
 
 module.exports = btoa;
 
-},{}],19:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -913,7 +992,7 @@ module.exports = function buildURL(url, params, paramsSerializer) {
   return url;
 };
 
-},{"./../utils":27}],20:[function(require,module,exports){
+},{"./../utils":29}],22:[function(require,module,exports){
 'use strict';
 
 /**
@@ -929,7 +1008,7 @@ module.exports = function combineURLs(baseURL, relativeURL) {
     : baseURL;
 };
 
-},{}],21:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -984,7 +1063,7 @@ module.exports = (
   })()
 );
 
-},{"./../utils":27}],22:[function(require,module,exports){
+},{"./../utils":29}],24:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1000,7 +1079,7 @@ module.exports = function isAbsoluteURL(url) {
   return /^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(url);
 };
 
-},{}],23:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -1070,7 +1149,7 @@ module.exports = (
   })()
 );
 
-},{"./../utils":27}],24:[function(require,module,exports){
+},{"./../utils":29}],26:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -1084,7 +1163,7 @@ module.exports = function normalizeHeaderName(headers, normalizedName) {
   });
 };
 
-},{"../utils":27}],25:[function(require,module,exports){
+},{"../utils":29}],27:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -1139,7 +1218,7 @@ module.exports = function parseHeaders(headers) {
   return parsed;
 };
 
-},{"./../utils":27}],26:[function(require,module,exports){
+},{"./../utils":29}],28:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1168,7 +1247,7 @@ module.exports = function spread(callback) {
   };
 };
 
-},{}],27:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 'use strict';
 
 var bind = require('./helpers/bind');
@@ -1473,7 +1552,7 @@ module.exports = {
   trim: trim
 };
 
-},{"./helpers/bind":17,"is-buffer":28}],28:[function(require,module,exports){
+},{"./helpers/bind":19,"is-buffer":30}],30:[function(require,module,exports){
 /*!
  * Determine if an object is a Buffer
  *
@@ -1496,7 +1575,7 @@ function isSlowBuffer (obj) {
   return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
 }
 
-},{}],29:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -1682,4 +1761,4 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}]},{},[2]);
+},{}]},{},[3]);
