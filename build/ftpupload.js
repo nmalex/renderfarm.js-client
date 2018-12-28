@@ -3,13 +3,14 @@ var Client = require('ftp');
 var fs = require('fs');
 
 console.log(process.argv);
-if (process.argv.length < 4) {
-    console.log("USAGE: node ftpupload.js <infile> <outfile>");
+if (process.argv.length < 5) {
+    console.log("USAGE: node ftpupload.js <infile> <uploadDir> <uploadFilename>");
     return 1;
 }
 
 var filename       = process.argv[2];
-var uploadFilename = process.argv[3];
+var uploadDir      = process.argv[3];
+var uploadFilename = process.argv[4];
 
 console.log(`Uploading ${filename} as ${uploadFilename}...`);
 
@@ -21,10 +22,13 @@ fs.readFile(filename, function read(err, data) {
 
     var c = new Client();
     c.on('ready', function() {
-        c.put(data, uploadFilename, function(err) {
+        c.cwd(uploadDir, function(err, currentDir) {
             if (err) throw err;
-            c.end();
-            console.log(`Success`);
+            c.put(data, uploadFilename, function(err) {
+                if (err) throw err;
+                c.end();
+                console.log(`Success`);
+            });
         });
     });
 
