@@ -24,6 +24,7 @@
   "devDependencies": {
     "@types/jasmine": "^2.8.11",
     "@types/node": "^10.12.2",
+    "ftp": "^0.3.10",
     "reflect-metadata": "^0.1.12"
   }
 }
