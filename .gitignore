@@ -1,5 +1,5 @@
 node_modules/
 dist/
-bundle/
+bundle/*.js
 package-lock.json
 ftp_settings.js
