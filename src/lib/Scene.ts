@@ -1,11 +1,26 @@
 "use strict";
 
-import { Camera } from "./Camera";
+import { IScene } from "./interface/IScene";
+import { ICamera } from "./interface/ICamera";
 
+const settings = require("../settings");
 const axios = require("axios");
 
-class Scene {
-    public Open(sceneFilename: string): Promise<Scene> {
+class Scene implements IScene {
+
+    public Create(): Promise<IScene> {
+        return new Promise(function(resolve, reject) {
+            reject(); // todo: implement it
+        }.bind(this));
+    }
+
+    public Open(maxSceneFilename: string): Promise<IScene> {
+        return new Promise(function(resolve, reject) {
+            reject(); // todo: implement it
+        }.bind(this));
+    }
+
+    public SaveAs(maxSceneFilename: string): Promise<IScene> {
         return new Promise(function(resolve, reject) {
             reject(); // todo: implement it
         }.bind(this));
@@ -17,7 +32,7 @@ class Scene {
         }.bind(this));
     }
 
-    public GetCameras(): Promise<Camera[]> {
+    public GetCameras(): Promise<ICamera[]> {
         return new Promise(function(resolve, reject) {
             reject(); // todo: implement it
         }.bind(this));

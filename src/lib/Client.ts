@@ -1,35 +1,46 @@
+import { IClient } from "./interface/IClient";
+import { ISession } from "./interface/ISession";
+import { IScene } from "./interface/IScene";
 import { Session } from "./Session";
 import { Scene } from "./Scene";
+import { IRenderManager } from "./interface/IRenderManager";
+import { RenderManager } from "./RenderManager";
 
 const settings = require("../settings");
 const axios = require("axios");
 
-class Client {
-    private session: Session;
-    private apiKey: string;
-    private workspaceGuid: string;
-    private baseUrl: string;
+class Client implements IClient {
+    private _session: Session;
+    private _apiKey: string;
+    private _workspaceGuid: string;
+    private _baseUrl: string;
+    private _scene: Scene;
+    private _renderManager: RenderManager;
 
     public constructor(apiKey: string, workspaceGuid: string) {
-        this.apiKey = apiKey;
-        this.workspaceGuid = workspaceGuid;
+        this._apiKey = apiKey;
+        this._workspaceGuid = workspaceGuid;
     }
 
-    public Connect(host: string, port: number): Promise<Session> {
+    public get Scene(): IScene {
+        return this._scene;
+    }
+
+    public get RenderManager(): IRenderManager {
+        return this._renderManager;
+    }
+
+    public Connect(host: string, port: number): Promise<ISession> {
         if (port) {
-            this.baseUrl = `https://${host}:${port}/v${settings.apiVersion}`;
+            this._baseUrl = `https://${host}:${port}/v${settings.apiVersion}`;
         } else {
-            this.baseUrl = `https://${host}/v${settings.apiVersion}`;
+            this._baseUrl = `https://${host}/v${settings.apiVersion}`;
         }
 
-        this.session = new Session();
-        return this.session.Open(this.baseUrl, this.apiKey, this.workspaceGuid);
-    }
-
-    public OpenScene(): Promise<Scene> {
-        return new Promise(function(resolve, reject) {
-            reject(); // todo: implement it
-        }.bind(this));
+        this._session = new Session();
+        this._scene = new Scene();
+        this._renderManager = new RenderManager();
+        return this._session.Open(this._baseUrl, this._apiKey, this._workspaceGuid);
     }
 }
 

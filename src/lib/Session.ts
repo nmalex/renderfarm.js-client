@@ -1,8 +1,11 @@
 "use strict";
 
+import { ISession } from "./interface/ISession";
+
+const settings = require("../settings");
 const axios = require("axios");
 
-class Session {
+class Session implements ISession {
     private _sessionGuid: string;
 
     public get SessionGuid(): string {
@@ -43,12 +46,20 @@ class Session {
 
     public KeepAlive(): Promise<any> {
         return new Promise(function(resolve, reject) {
+            if (!this._sessionGuid) {
+                reject("session not open");
+            }
+
             reject(); // todo: implement it
         }.bind(this));
     }
 
     public Close(): Promise<any> {
         return new Promise(function(resolve, reject) {
+            if (!this._sessionGuid) {
+                reject("session not open");
+            }
+
             reject(); // todo: implement it
         }.bind(this));
     }
