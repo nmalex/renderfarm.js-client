@@ -31,7 +31,7 @@ class Client implements IClient {
     }
 
     public Connect(host: string, port: number): Promise<ISession> {
-        if (port) {
+        if (port && port !== 443) {
             this._baseUrl = `https://${host}:${port}/v${settings.apiVersion}`;
         } else {
             this._baseUrl = `https://${host}/v${settings.apiVersion}`;

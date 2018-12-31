@@ -1,61 +1,112 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+(function (global){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var Client_1 = require("./lib/Client");
+global["RFJS"] = {
+    Client: Client_1.Client
+};
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./lib/Client":2}],2:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Session_1 = require("./Session");
-var settings = require("./settings");
+var Scene_1 = require("./Scene");
+var RenderManager_1 = require("./RenderManager");
+var settings = require("../settings");
 var axios = require("axios");
 var Client = /** @class */ (function () {
     function Client(apiKey, workspaceGuid) {
-        this.apiKey = apiKey;
-        this.workspaceGuid = workspaceGuid;
+        this._apiKey = apiKey;
+        this._workspaceGuid = workspaceGuid;
     }
+    Object.defineProperty(Client.prototype, "Scene", {
+        get: function () {
+            return this._scene;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Client.prototype, "RenderManager", {
+        get: function () {
+            return this._renderManager;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Client.prototype.Connect = function (host, port) {
-        if (port) {
-            this.baseUrl = "https://" + host + ":" + port + "/v" + settings.apiVersion;
+        if (port && port !== 443) {
+            this._baseUrl = "https://" + host + ":" + port + "/v" + settings.apiVersion;
         }
         else {
-            this.baseUrl = "https://" + host + "/v" + settings.apiVersion;
+            this._baseUrl = "https://" + host + "/v" + settings.apiVersion;
         }
-        this.session = new Session_1.Session();
-        return this.session.Open(this.baseUrl, this.apiKey, this.workspaceGuid);
-    };
-    Client.prototype.OpenScene = function (sceneFilename) {
-        return new Promise(function (resolve, reject) {
-            axios.post(this.baseUrl + "/session", {
-                scene_filename: sceneFilename,
-                session: this.session
-            }).then(function (response) {
-                if (response.data && response.data.gid) {
-                    this.session = response.data.gid;
-                    resolve(response.data);
-                }
-                else if (response.data && response.data.error) {
-                    reject(response.data.error);
-                }
-                else {
-                    reject("failed to handle server response");
-                }
-            }).catch(function (err) {
-                if (err.message) {
-                    reject(err);
-                    return;
-                }
-                else if (err.response && err.response.data && err.response.error) {
-                    reject(err.response.error);
-                }
-                else {
-                    reject(err);
-                }
-            }); // end of axios.post promise
-        }.bind(this));
+        this._session = new Session_1.Session();
+        this._scene = new Scene_1.Scene();
+        this._renderManager = new RenderManager_1.RenderManager();
+        return this._session.Open(this._baseUrl, this._apiKey, this._workspaceGuid);
     };
     return Client;
 }());
 exports.Client = Client;
 
-},{"./Session":2,"./settings":4,"axios":5}],2:[function(require,module,exports){
+},{"../settings":6,"./RenderManager":3,"./Scene":4,"./Session":5,"axios":7}],3:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var settings = require("../settings");
+var axios = require("axios");
+var RenderManager = /** @class */ (function () {
+    function RenderManager() {
+    }
+    RenderManager.prototype.Render = function (camera) {
+        throw new Error("Method not implemented.");
+    };
+    return RenderManager;
+}());
+exports.RenderManager = RenderManager;
+
+},{"../settings":6,"axios":7}],4:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var settings = require("../settings");
+var axios = require("axios");
+var Scene = /** @class */ (function () {
+    function Scene() {
+    }
+    Scene.prototype.Create = function () {
+        return new Promise(function (resolve, reject) {
+            reject(); // todo: implement it
+        }.bind(this));
+    };
+    Scene.prototype.Open = function (maxSceneFilename) {
+        return new Promise(function (resolve, reject) {
+            reject(); // todo: implement it
+        }.bind(this));
+    };
+    Scene.prototype.SaveAs = function (maxSceneFilename) {
+        return new Promise(function (resolve, reject) {
+            reject(); // todo: implement it
+        }.bind(this));
+    };
+    Scene.prototype.Close = function () {
+        return new Promise(function (resolve, reject) {
+            reject(); // todo: implement it
+        }.bind(this));
+    };
+    Scene.prototype.GetCameras = function () {
+        return new Promise(function (resolve, reject) {
+            reject(); // todo: implement it
+        }.bind(this));
+    };
+    return Scene;
+}());
+exports.Scene = Scene;
+
+},{"../settings":6,"axios":7}],5:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var settings = require("../settings");
 var axios = require("axios");
 var Session = /** @class */ (function () {
     function Session() {
@@ -103,11 +154,17 @@ var Session = /** @class */ (function () {
     };
     Session.prototype.KeepAlive = function () {
         return new Promise(function (resolve, reject) {
+            if (!this._sessionGuid) {
+                reject("session not open");
+            }
             reject(); // todo: implement it
         }.bind(this));
     };
     Session.prototype.Close = function () {
         return new Promise(function (resolve, reject) {
+            if (!this._sessionGuid) {
+                reject("session not open");
+            }
             reject(); // todo: implement it
         }.bind(this));
     };
@@ -115,24 +172,14 @@ var Session = /** @class */ (function () {
 }());
 exports.Session = Session;
 
-},{"axios":5}],3:[function(require,module,exports){
-(function (global){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var Client_1 = require("./Client");
-global["RFJS"] = {
-    Client: Client_1.Client
-};
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./Client":1}],4:[function(require,module,exports){
+},{"../settings":6,"axios":7}],6:[function(require,module,exports){
 module.exports = {
     apiVersion: 1
 };
 
-},{}],5:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 module.exports = require('./lib/axios');
-},{"./lib/axios":7}],6:[function(require,module,exports){
+},{"./lib/axios":9}],8:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -316,7 +363,7 @@ module.exports = function xhrAdapter(config) {
 };
 
 }).call(this,require('_process'))
-},{"../core/createError":13,"./../core/settle":16,"./../helpers/btoa":20,"./../helpers/buildURL":21,"./../helpers/cookies":23,"./../helpers/isURLSameOrigin":25,"./../helpers/parseHeaders":27,"./../utils":29,"_process":31}],7:[function(require,module,exports){
+},{"../core/createError":15,"./../core/settle":18,"./../helpers/btoa":22,"./../helpers/buildURL":23,"./../helpers/cookies":25,"./../helpers/isURLSameOrigin":27,"./../helpers/parseHeaders":29,"./../utils":31,"_process":33}],9:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -370,7 +417,7 @@ module.exports = axios;
 // Allow use of default import syntax in TypeScript
 module.exports.default = axios;
 
-},{"./cancel/Cancel":8,"./cancel/CancelToken":9,"./cancel/isCancel":10,"./core/Axios":11,"./defaults":18,"./helpers/bind":19,"./helpers/spread":28,"./utils":29}],8:[function(require,module,exports){
+},{"./cancel/Cancel":10,"./cancel/CancelToken":11,"./cancel/isCancel":12,"./core/Axios":13,"./defaults":20,"./helpers/bind":21,"./helpers/spread":30,"./utils":31}],10:[function(require,module,exports){
 'use strict';
 
 /**
@@ -391,7 +438,7 @@ Cancel.prototype.__CANCEL__ = true;
 
 module.exports = Cancel;
 
-},{}],9:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 'use strict';
 
 var Cancel = require('./Cancel');
@@ -450,14 +497,14 @@ CancelToken.source = function source() {
 
 module.exports = CancelToken;
 
-},{"./Cancel":8}],10:[function(require,module,exports){
+},{"./Cancel":10}],12:[function(require,module,exports){
 'use strict';
 
 module.exports = function isCancel(value) {
   return !!(value && value.__CANCEL__);
 };
 
-},{}],11:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 'use strict';
 
 var defaults = require('./../defaults');
@@ -538,7 +585,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 
 module.exports = Axios;
 
-},{"./../defaults":18,"./../utils":29,"./InterceptorManager":12,"./dispatchRequest":14}],12:[function(require,module,exports){
+},{"./../defaults":20,"./../utils":31,"./InterceptorManager":14,"./dispatchRequest":16}],14:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -592,7 +639,7 @@ InterceptorManager.prototype.forEach = function forEach(fn) {
 
 module.exports = InterceptorManager;
 
-},{"./../utils":29}],13:[function(require,module,exports){
+},{"./../utils":31}],15:[function(require,module,exports){
 'use strict';
 
 var enhanceError = require('./enhanceError');
@@ -612,7 +659,7 @@ module.exports = function createError(message, config, code, request, response) 
   return enhanceError(error, config, code, request, response);
 };
 
-},{"./enhanceError":15}],14:[function(require,module,exports){
+},{"./enhanceError":17}],16:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -700,7 +747,7 @@ module.exports = function dispatchRequest(config) {
   });
 };
 
-},{"../cancel/isCancel":10,"../defaults":18,"./../helpers/combineURLs":22,"./../helpers/isAbsoluteURL":24,"./../utils":29,"./transformData":17}],15:[function(require,module,exports){
+},{"../cancel/isCancel":12,"../defaults":20,"./../helpers/combineURLs":24,"./../helpers/isAbsoluteURL":26,"./../utils":31,"./transformData":19}],17:[function(require,module,exports){
 'use strict';
 
 /**
@@ -723,7 +770,7 @@ module.exports = function enhanceError(error, config, code, request, response) {
   return error;
 };
 
-},{}],16:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 'use strict';
 
 var createError = require('./createError');
@@ -751,7 +798,7 @@ module.exports = function settle(resolve, reject, response) {
   }
 };
 
-},{"./createError":13}],17:[function(require,module,exports){
+},{"./createError":15}],19:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -773,7 +820,7 @@ module.exports = function transformData(data, headers, fns) {
   return data;
 };
 
-},{"./../utils":29}],18:[function(require,module,exports){
+},{"./../utils":31}],20:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -873,7 +920,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 module.exports = defaults;
 
 }).call(this,require('_process'))
-},{"./adapters/http":6,"./adapters/xhr":6,"./helpers/normalizeHeaderName":26,"./utils":29,"_process":31}],19:[function(require,module,exports){
+},{"./adapters/http":8,"./adapters/xhr":8,"./helpers/normalizeHeaderName":28,"./utils":31,"_process":33}],21:[function(require,module,exports){
 'use strict';
 
 module.exports = function bind(fn, thisArg) {
@@ -886,7 +933,7 @@ module.exports = function bind(fn, thisArg) {
   };
 };
 
-},{}],20:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 'use strict';
 
 // btoa polyfill for IE<10 courtesy https://github.com/davidchambers/Base64.js
@@ -924,7 +971,7 @@ function btoa(input) {
 
 module.exports = btoa;
 
-},{}],21:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -992,7 +1039,7 @@ module.exports = function buildURL(url, params, paramsSerializer) {
   return url;
 };
 
-},{"./../utils":29}],22:[function(require,module,exports){
+},{"./../utils":31}],24:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1008,7 +1055,7 @@ module.exports = function combineURLs(baseURL, relativeURL) {
     : baseURL;
 };
 
-},{}],23:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -1063,7 +1110,7 @@ module.exports = (
   })()
 );
 
-},{"./../utils":29}],24:[function(require,module,exports){
+},{"./../utils":31}],26:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1079,7 +1126,7 @@ module.exports = function isAbsoluteURL(url) {
   return /^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(url);
 };
 
-},{}],25:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -1149,7 +1196,7 @@ module.exports = (
   })()
 );
 
-},{"./../utils":29}],26:[function(require,module,exports){
+},{"./../utils":31}],28:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -1163,7 +1210,7 @@ module.exports = function normalizeHeaderName(headers, normalizedName) {
   });
 };
 
-},{"../utils":29}],27:[function(require,module,exports){
+},{"../utils":31}],29:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -1218,7 +1265,7 @@ module.exports = function parseHeaders(headers) {
   return parsed;
 };
 
-},{"./../utils":29}],28:[function(require,module,exports){
+},{"./../utils":31}],30:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1247,7 +1294,7 @@ module.exports = function spread(callback) {
   };
 };
 
-},{}],29:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 'use strict';
 
 var bind = require('./helpers/bind');
@@ -1552,7 +1599,7 @@ module.exports = {
   trim: trim
 };
 
-},{"./helpers/bind":19,"is-buffer":30}],30:[function(require,module,exports){
+},{"./helpers/bind":21,"is-buffer":32}],32:[function(require,module,exports){
 /*!
  * Determine if an object is a Buffer
  *
@@ -1575,7 +1622,7 @@ function isSlowBuffer (obj) {
   return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
 }
 
-},{}],31:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -1761,4 +1808,4 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}]},{},[3]);
+},{}]},{},[1]);
