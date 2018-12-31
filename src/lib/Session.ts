@@ -12,7 +12,7 @@ class Session implements ISession {
         return this._sessionGuid;
     }
 
-    public Open(baseUrl: string, apiKey: string, workspaceGuid: string): Promise<any> {
+    public static Open(baseUrl: string, apiKey: string, workspaceGuid: string): Promise<any> {
         return new Promise(function(resolve, reject) {
             if (this._sessionGuid) {
                 reject("session already open");
