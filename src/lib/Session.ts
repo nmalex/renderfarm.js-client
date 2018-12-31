@@ -4,9 +4,6 @@ import { ISession } from "./interface/ISession";
 import { ApiRequest } from "./ApiRequest";
 import { ISerializable } from "./interface/ISerializable";
 
-const settings = require("../settings");
-const axios = require("axios");
-
 class Session implements ISession, ISerializable {
     private _sessionGuid: string;
     private _baseUrl: string;
@@ -28,23 +25,13 @@ class Session implements ISession, ISerializable {
     }
 
     public KeepAlive(): Promise<ISession> {
-        return new Promise(function(resolve, reject) {
-            if (!this._sessionGuid) {
-                reject("session not open");
-            }
-
-            reject(); // todo: implement it
-        }.bind(this));
+        return new ApiRequest<Session>(this._baseUrl, this)
+            .Put("/session", this._sessionGuid, {});
     }
 
     public Close(): Promise<ISession> {
-        return new Promise(function(resolve, reject) {
-            if (!this._sessionGuid) {
-                reject("session not open");
-            }
-
-            reject(); // todo: implement it
-        }.bind(this));
+        return new ApiRequest<Session>(this._baseUrl, this)
+            .Delete("/session", this._sessionGuid);
     }
 
     public toJson(): any {
@@ -53,7 +40,7 @@ class Session implements ISession, ISerializable {
         };
     }
 
-    public fromJSON(json: any): void {
+    public Parse(json: any): void {
         if (!json.guid) {
             throw new Error("can't parse Session json");
         }

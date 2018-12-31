@@ -5,9 +5,11 @@ import { Session } from "./Session";
 import { Scene } from "./Scene";
 import { IRenderManager } from "./interface/IRenderManager";
 import { RenderManager } from "./RenderManager";
+import { ApiRequest } from "./ApiRequest";
+import { Worker } from "./Worker";
+import { IWorker } from "./interface/IWorker";
 
 const settings = require("../settings");
-const axios = require("axios");
 
 class Client implements IClient {
     private _session: Session;
@@ -38,17 +40,30 @@ class Client implements IClient {
         return this._renderManager;
     }
 
-    public Connect(host: string, port: number): Promise<ISession> {
+    private MakeBaseUrl(host: string, port: number): string {
         if (port && port !== 443) {
-            this._baseUrl = `https://${host}:${port}/v${settings.apiVersion}`;
+            return `https://${host}:${port}/v${settings.apiVersion}`;
         } else {
-            this._baseUrl = `https://${host}/v${settings.apiVersion}`;
+            return `https://${host}/v${settings.apiVersion}`;
         }
+    }
 
+    public Connect(host: string, port: number): Promise<ISession> {
+        this._baseUrl = this.MakeBaseUrl(host, port);
         this._session = new Session(this._baseUrl);
         this._scene = new Scene(this._baseUrl);
         this._renderManager = new RenderManager(this._baseUrl);
         return this._session.Open(this._apiKey, this._workspaceGuid);
+    }
+
+    public GetWorkers(host: string, port: number): Promise<IWorker[]> {
+        return new ApiRequest<Worker>(
+            this.MakeBaseUrl(host, port), 
+            function(baseUrl: string) {
+                return new Worker(baseUrl);
+            }).GetAll("/worker", {
+                api_key: this._apiKey
+            });
     }
 }
 
