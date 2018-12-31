@@ -48,7 +48,7 @@ class Client implements IClient {
         this._session = new Session(this._baseUrl);
         this._scene = new Scene(this._baseUrl);
         this._renderManager = new RenderManager(this._baseUrl);
-        return Session.Open(this._apiKey, this._workspaceGuid);
+        return this._session.Open(this._apiKey, this._workspaceGuid);
     }
 }
 

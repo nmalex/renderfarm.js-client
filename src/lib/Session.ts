@@ -19,18 +19,12 @@ class Session implements ISession, ISerializable {
         return this._sessionGuid;
     }
 
-    public static Open(apiKey: string, workspaceGuid: string): Promise<ISession> {
-        return new Promise(function(resolve, reject) {
-            if (this._sessionGuid) {
-                reject("session already open");
-            }
-
-            return new ApiRequest<Session>(this._baseUrl, this)
-                .Post("/session", {
-                    api_key: apiKey,
-                    workspace: workspaceGuid
-                });
-        }.bind(this));
+    public Open(apiKey: string, workspaceGuid: string): Promise<ISession> {
+        return new ApiRequest<Session>(this._baseUrl, this)
+            .Post("/session", {
+                api_key: apiKey,
+                workspace: workspaceGuid
+            });
     }
 
     public KeepAlive(): Promise<ISession> {
@@ -59,7 +53,7 @@ class Session implements ISession, ISerializable {
         };
     }
 
-    public parse(json: any): void {
+    public fromJSON(json: any): void {
         if (!json.guid) {
             throw new Error("can't parse Session json");
         }

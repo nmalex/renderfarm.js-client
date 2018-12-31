@@ -2,5 +2,5 @@
 
 export interface ISerializable  {
     toJson(): any;
-    parse(json: any): void;
+    fromJSON(json: any): void;
 }
