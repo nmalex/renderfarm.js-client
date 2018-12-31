@@ -1,50 +1,39 @@
 "use strict";
 
 import { ISession } from "./interface/ISession";
+import { ApiRequest } from "./ApiRequest";
+import { ISerializable } from "./interface/ISerializable";
 
 const settings = require("../settings");
 const axios = require("axios");
 
-class Session implements ISession {
+class Session implements ISession, ISerializable {
     private _sessionGuid: string;
+    private _baseUrl: string;
+
+    public constructor(baseUrl: string) {
+        this._baseUrl = baseUrl;
+    }
 
     public get SessionGuid(): string {
         return this._sessionGuid;
     }
 
-    public static Open(baseUrl: string, apiKey: string, workspaceGuid: string): Promise<any> {
+    public static Open(apiKey: string, workspaceGuid: string): Promise<ISession> {
         return new Promise(function(resolve, reject) {
             if (this._sessionGuid) {
                 reject("session already open");
             }
 
-            axios.post(`${baseUrl}/session`, {
-                api_key: apiKey, 
-                workspace: workspaceGuid
-            })
-            .then(function (response: any) {
-                if (response.data && response.data.guid) {
-                    this._sessionGuid = response.data.guid;
-                    resolve(response.data);
-                } else if (response.data && response.data.error) {
-                    reject(response.data.error);
-                } else {
-                    reject("failed to handle server response");
-                }
-            }.bind(this))
-            .catch(function (err: any) {
-                if (err.response && err.response.data && err.response.data.error) {
-                    reject(err.response.data.error);
-                } else if (err.message) {
-                    reject(err.message);
-                } else {
-                    reject(err);
-                }
-            }.bind(this)); // end of axios.post promise
+            return new ApiRequest<Session>(this._baseUrl, this)
+                .Post("/session", {
+                    api_key: apiKey,
+                    workspace: workspaceGuid
+                });
         }.bind(this));
     }
 
-    public KeepAlive(): Promise<any> {
+    public KeepAlive(): Promise<ISession> {
         return new Promise(function(resolve, reject) {
             if (!this._sessionGuid) {
                 reject("session not open");
@@ -54,7 +43,7 @@ class Session implements ISession {
         }.bind(this));
     }
 
-    public Close(): Promise<any> {
+    public Close(): Promise<ISession> {
         return new Promise(function(resolve, reject) {
             if (!this._sessionGuid) {
                 reject("session not open");
@@ -62,6 +51,20 @@ class Session implements ISession {
 
             reject(); // todo: implement it
         }.bind(this));
+    }
+
+    public toJson(): any {
+        return {
+            guid: this._sessionGuid
+        };
+    }
+
+    public parse(json: any): void {
+        if (!json.guid) {
+            throw new Error("can't parse Session json");
+        }
+
+        this._sessionGuid = json.guid;
     }
 }
 

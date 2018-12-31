@@ -5,6 +5,6 @@ const axios = require("axios");
 
 export interface ISession {
     SessionGuid: string;
-    KeepAlive(): Promise<any>;
-    Close(): Promise<any>;
+    KeepAlive(): Promise<ISession>;
+    Close(): Promise<ISession>;
 }

@@ -22,8 +22,16 @@ class Client implements IClient {
         this._workspaceGuid = workspaceGuid;
     }
 
+    public get BaseUrl(): string {
+        return this._baseUrl;
+    }
+
     public get Scene(): IScene {
         return this._scene;
+    }
+
+    public get Session(): ISession {
+        return this._session;
     }
 
     public get RenderManager(): IRenderManager {
@@ -37,10 +45,10 @@ class Client implements IClient {
             this._baseUrl = `https://${host}/v${settings.apiVersion}`;
         }
 
-        this._session = new Session();
-        this._scene = new Scene();
-        this._renderManager = new RenderManager();
-        return Session.Open(this._baseUrl, this._apiKey, this._workspaceGuid);
+        this._session = new Session(this._baseUrl);
+        this._scene = new Scene(this._baseUrl);
+        this._renderManager = new RenderManager(this._baseUrl);
+        return Session.Open(this._apiKey, this._workspaceGuid);
     }
 }
 
