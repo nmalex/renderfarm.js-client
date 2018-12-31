@@ -4,7 +4,7 @@
   "description": "three.js server side rendering client",
   "main": "dist/main.js",
   "scripts": {
-    "build": "rd /S /Q dist & tsc --declaration & browserify ./dist/browser.js > ./bundle/renderfarm.js",
+    "build": "tsc --declaration & browserify ./dist/browser.js > ./bundle/renderfarm.js",
     "test": "tsc & jasmine --config=jasmine.json"
   },
   "repository": {
