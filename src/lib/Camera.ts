@@ -1,11 +1,13 @@
 "use strict";
 
 import { Camera as threejsCamera } from "three";
-import { ICamera } from "./interface/ICamera";
+import { IObject3D } from "./interface/IObject3D";
 import { ApiRequest } from "./ApiRequest";
 
 const settings = require("../settings");
 const axios = require("axios");
+
+export type ICamera = IObject3D<threejsCamera>;
 
 export class Camera implements ICamera {
     private _baseUrl: string;
@@ -18,45 +20,35 @@ export class Camera implements ICamera {
         this._maxCameraName = maxCameraName;
     }
 
-    public get MaxCameraName(): string {
+    public get Name(): string {
         return this._maxCameraName;
     }
 
-    public get ThreejsCameraObj(): threejsCamera {
+    public get Ref(): threejsCamera {
         return this._threejsCameraObj;
     }
 
-    public Upload(sessionGuid: string): Promise<ICamera> {
-        return new ApiRequest<ICamera>(this._baseUrl, this).Post("/camera", {
-            camera: this.toJSON()
-        });
+    public Post(sessionGuid: string): Promise<ICamera> {
+        throw new Error("Method not implemented.");
     }
-
-    // factory method, reads a camera from 3ds max and creates corresponding threejs camera
-    public Download(sessionGuid: string): Promise<ICamera> {
-        return new ApiRequest<ICamera>(this._baseUrl, this).Get("/camera", this._maxCameraName, {
-            session: sessionGuid
-        });
+    public Get(sessionGuid: string): Promise<ICamera> {
+        throw new Error("Method not implemented.");
     }
-
-    // sends camera changes to 3ds max
-    public Update(sessionGuid: string): Promise<ICamera> {
-        return new Promise(function (resolve, reject) {
-            reject(); // todo: implement it
-        }.bind(this));
+    public Put(sessionGuid: string): Promise<ICamera> {
+        throw new Error("Method not implemented.");
     }
-
-    // deletes camera from 3ds max scene
     public Delete(sessionGuid: string): Promise<ICamera> {
         return new Promise(function (resolve, reject) {
             reject(); // todo: implement it
         }.bind(this));
     }
 
-    public toJSON(): any {
-        return this._threejsCameraObj.toJSON();
+    public Serialize(): any {
+        return {
+
+        };
     }
-    public Parse(json: any): void {
+    public Deserialize(json: any): void {
         //todo: implement json parsing
     }
 }

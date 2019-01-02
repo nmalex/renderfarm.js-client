@@ -1,6 +1,6 @@
 "use strict";
 
-import { ICamera } from "./ICamera";
+import { ICamera } from "../Camera";
 
 export interface IScene {
     Create(): Promise<IScene>;

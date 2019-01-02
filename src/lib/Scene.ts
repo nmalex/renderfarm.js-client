@@ -1,7 +1,7 @@
 "use strict";
 
 import { IScene } from "./interface/IScene";
-import { ICamera } from "./interface/ICamera";
+import { ICamera } from "./Camera";
 
 const settings = require("../settings");
 const axios = require("axios");

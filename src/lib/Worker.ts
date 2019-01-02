@@ -19,11 +19,11 @@ export class Worker implements IWorker {
     public RamUsage: number;
     public TotalRam: number;
 
-    public toJson() {
-        return {};    
+    public Serialize() {
+        throw Error("Not implemented");
     }
 
-    public Parse(json: any): void {
+    public Deserialize(json: any): void {
         this.Ip        = json.ip;
         this.Port      = json.port;
         this.Mac       = json.mac;

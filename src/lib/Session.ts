@@ -34,13 +34,13 @@ class Session implements ISession, ISerializable {
             .Delete("/session", this._sessionGuid);
     }
 
-    public toJson(): any {
+    public Serialize(): any {
         return {
             guid: this._sessionGuid
         };
     }
 
-    public Parse(json: any): void {
+    public Deserialize(json: any): void {
         if (!json.guid) {
             throw new Error("can't parse Session json");
         }
