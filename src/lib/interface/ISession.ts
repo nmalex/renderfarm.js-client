@@ -1,10 +1,11 @@
 "use strict";
 
-const settings = require("../settings");
-const axios = require("axios");
+import { IScene } from "./IScene";
 
 export interface ISession {
-    SessionGuid: string;
+    Guid: string;
+    Scene: IScene;
+
     Open(apiKey: string, workspaceGuid: string): Promise<ISession>;
     KeepAlive(): Promise<ISession>;
     Close(): Promise<ISession>;

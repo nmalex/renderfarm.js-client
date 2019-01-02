@@ -1,28 +1,30 @@
 "use strict";
 
 import { Object3D as threejsObject3D } from "three";
-import { IScene } from "./interface/IScene";
-import { ICamera } from "./Camera";
+import { Camera as threejsCamera } from "three";
 import { IObject3D } from "./interface/IObject3D";
+import { IScene } from "./interface/IScene";
+import { Camera, ICamera } from "./Camera";
 
-const settings = require("../settings");
 const axios = require("axios");
 
 //this is a client to 3ds max scene
 class Scene implements IScene {
     private _baseUrl: string;
+    private _sessionGuid: string;
 
-    public constructor(baseUrl: string) {
+    public constructor(baseUrl: string, sessionGuid: string) {
         this._baseUrl = baseUrl;
+        this._sessionGuid = sessionGuid;
     }
 
-    public Create(sessionGuid: string): Promise<IScene> {
+    public New(): Promise<IScene> {
         return new Promise(function(resolve, reject) {
             reject(); // todo: implement it
         }.bind(this));
     }
 
-    public Open(sessionGuid: string, maxSceneFilename: string): Promise<IScene> {
+    public Open(maxSceneFilename: string): Promise<IScene> {
         return new Promise(function(resolve, reject) {
 
             axios.post(`${this._baseUrl}/scene`, {
@@ -51,15 +53,49 @@ class Scene implements IScene {
         }.bind(this));
     }
 
-    public SaveAs(sessionGuid: string, maxSceneFilename: string): Promise<IScene> {
+    public SaveAs(maxSceneFilename: string): Promise<IScene> {
         return new Promise(function(resolve, reject) {
             reject(); // todo: implement it
         }.bind(this));
     }
 
-    public Close(sessionGuid: string): Promise<any> {
+    public Close(): Promise<any> {
         return new Promise(function(resolve, reject) {
             reject(); // todo: implement it
+        }.bind(this));
+    }
+
+    public Create(obj: threejsObject3D): Promise<IObject3D<threejsObject3D>> {
+        if (obj.type === "Camera") return this.PostCamera(obj as unknown as threejsCamera);
+    }
+
+    public Read(maxNodeName: string): Promise<IObject3D<threejsObject3D>> {
+        return new Promise<IObject3D<threejsObject3D>>(function(resolve, reject) {
+            reject();
+        }.bind(this));
+    }
+
+    public Update(obj: threejsObject3D): Promise<IObject3D<threejsObject3D>> {
+        return new Promise<IObject3D<threejsObject3D>>(function(resolve, reject) {
+            reject();
+        }.bind(this));
+    }
+
+    public Delete(obj: threejsObject3D): Promise<IObject3D<threejsObject3D>> {
+        return new Promise<IObject3D<threejsObject3D>>(function(resolve, reject) {
+            reject();
+        }.bind(this));
+    }
+
+    private PostCamera(obj: threejsCamera): Promise<IObject3D<threejsCamera>> {
+        return new Promise<IObject3D<threejsCamera>>(function(resolve, reject) {
+            var request = new Camera(this._baseUrl, obj).Post(this._sessionGuid);
+            request.then(function(camera: IObject3D<threejsCamera>){
+                resolve(camera);
+            }.bind(this)).catch(function(err){
+                reject(err);
+            }.bind(this));
+            return;
         }.bind(this));
     }
 }

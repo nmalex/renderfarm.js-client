@@ -14,10 +14,9 @@ export class Camera implements ICamera {
     private _maxCameraName: string;
     private _threejsCameraObj: threejsCamera;
 
-    private constructor(baseUrl: string, threejsCameraObj: threejsCamera, maxCameraName: string) {
+    public constructor(baseUrl: string, threejsCameraObj: threejsCamera) {
         this._baseUrl = baseUrl;
         this._threejsCameraObj = threejsCameraObj;
-        this._maxCameraName = maxCameraName;
     }
 
     public get Name(): string {

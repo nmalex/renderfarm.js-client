@@ -1,10 +1,16 @@
 "use strict";
 
-import { ICamera } from "../Camera";
+import { Object3D as threejsObject3D } from "three";
+import { IObject3D } from "./IObject3D";
 
 export interface IScene {
-    Create(sessionGuid: string): Promise<IScene>;
-    SaveAs(sessionGuid: string, maxSceneFilename: string): Promise<IScene>;
-    Open(sessionGuid: string, maxSceneFilename: string): Promise<IScene>;
-    Close(sessionGuid: string): Promise<any>;
+    New(): Promise<IScene>;
+    SaveAs(maxSceneFilename: string): Promise<IScene>;
+    Open(maxSceneFilename: string): Promise<IScene>;
+    Close(): Promise<any>;
+
+    Create(obj: threejsObject3D): Promise<IObject3D<threejsObject3D>>;
+    Read(maxNodeName: string): Promise<IObject3D<threejsObject3D>>;
+    Update(obj: threejsObject3D): Promise<IObject3D<threejsObject3D>>;
+    Delete(obj: threejsObject3D): Promise<IObject3D<threejsObject3D>>;
 }

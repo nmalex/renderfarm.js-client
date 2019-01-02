@@ -14,7 +14,14 @@ export class RenderManager implements IRenderManager {
         this._baseUrl = baseUrl;
     }
 
-    Render(camera: threejsCamera): Promise<IJob> {
+    public Render(sessionGuid: string, camera: threejsCamera): Promise<IJob> {
         throw new Error("Method not implemented.");
+    }
+
+    public Cancel(jobGuid: string): Promise<any> {
+        return new Promise<any>(function(resolve, reject){
+            //todo: implement it
+            reject();
+        }.bind(this));
     }
 }

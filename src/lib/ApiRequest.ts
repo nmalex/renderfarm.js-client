@@ -2,9 +2,7 @@
 
 import { IApiRequest } from "./interface/IApiRequest";
 import { ISerializable } from "./interface/ISerializable";
-import { IWorker } from "./interface/IWorker";
 
-const settings = require("../settings");
 const axios = require("axios");
 
 export class ApiRequest<T extends ISerializable> implements IApiRequest<T> {
