@@ -2,13 +2,21 @@
 
 import { Camera as threejsCamera } from "three";
 import { ICamera } from "./interface/ICamera";
+import { ApiRequest } from "./ApiRequest";
 
 const settings = require("../settings");
 const axios = require("axios");
 
 export class Camera implements ICamera {
+    private _baseUrl: string;
     private _maxCameraName: string;
     private _threejsCameraObj: threejsCamera;
+
+    private constructor(baseUrl: string, threejsCameraObj: threejsCamera, maxCameraName: string) {
+        this._baseUrl = baseUrl;
+        this._threejsCameraObj = threejsCameraObj;
+        this._maxCameraName = maxCameraName;
+    }
 
     public get MaxCameraName(): string {
         return this._maxCameraName;
@@ -18,31 +26,37 @@ export class Camera implements ICamera {
         return this._threejsCameraObj;
     }
 
-    // factory method, takes threejs camera and creates corresponding 3ds max camera in scene
-    public static Upload(obj: threejsCamera): Promise<ICamera> {
-        return new Promise(function (resolve, reject) {
-            reject(); // todo: implement it
-        }.bind(this));
+    public Upload(sessionGuid: string): Promise<ICamera> {
+        return new ApiRequest<ICamera>(this._baseUrl, this).Post("/camera", {
+            camera: this.toJSON()
+        });
     }
 
     // factory method, reads a camera from 3ds max and creates corresponding threejs camera
-    public static Download(maxCameraName: string): Promise<ICamera> {
-        return new Promise(function (resolve, reject) {
-            reject(); // todo: implement it
-        }.bind(this));
+    public Download(sessionGuid: string): Promise<ICamera> {
+        return new ApiRequest<ICamera>(this._baseUrl, this).Get("/camera", this._maxCameraName, {
+            session: sessionGuid
+        });
     }
 
     // sends camera changes to 3ds max
-    public Update(): Promise<ICamera> {
+    public Update(sessionGuid: string): Promise<ICamera> {
         return new Promise(function (resolve, reject) {
             reject(); // todo: implement it
         }.bind(this));
     }
 
     // deletes camera from 3ds max scene
-    public Delete(): Promise<ICamera> {
+    public Delete(sessionGuid: string): Promise<ICamera> {
         return new Promise(function (resolve, reject) {
             reject(); // todo: implement it
         }.bind(this));
+    }
+
+    public toJSON(): any {
+        return this._threejsCameraObj.toJSON();
+    }
+    public Parse(json: any): void {
+        //todo: implement json parsing
     }
 }

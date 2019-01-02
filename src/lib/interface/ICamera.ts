@@ -1,11 +1,14 @@
 "use strict";
 
 import { Camera as threejsCamera } from "three";
+import { ISerializable } from "./ISerializable";
 
-export interface ICamera {
+export interface ICamera extends ISerializable {
     ThreejsCameraObj: threejsCamera;
     MaxCameraName: string;
 
-    Update(obj: threejsCamera): Promise<ICamera>;
-    Delete(): Promise<ICamera>;
+    Upload(sessionGuid: string): Promise<ICamera>;
+    Download(sessionGuid: string): Promise<ICamera>;
+    Update(sessionGuid: string, obj: threejsCamera): Promise<ICamera>;
+    Delete(sessionGuid: string): Promise<ICamera>;
 }
