@@ -3,9 +3,8 @@
 import { ICamera } from "../Camera";
 
 export interface IScene {
-    Create(): Promise<IScene>;
-    SaveAs(maxSceneFilename: string): Promise<IScene>;
-    Open(maxSceneFilename: string): Promise<IScene>;
-    Close(): Promise<any>;
-    GetCameras(): Promise<ICamera[]>;
+    Create(sessionGuid: string): Promise<IScene>;
+    SaveAs(sessionGuid: string, maxSceneFilename: string): Promise<IScene>;
+    Open(sessionGuid: string, maxSceneFilename: string): Promise<IScene>;
+    Close(sessionGuid: string): Promise<any>;
 }
