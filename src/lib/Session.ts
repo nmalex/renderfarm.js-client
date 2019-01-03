@@ -5,11 +5,14 @@ import { ApiRequest } from "./ApiRequest";
 import { ISerializable } from "./interface/ISerializable";
 import { IScene } from "./interface/IScene";
 import { Scene } from "./Scene";
+import { IRenderManager } from "./interface/IRenderManager";
+import { RenderManager } from "./RenderManager";
 
 class Session implements ISession, ISerializable {
     private _sessionGuid: string;
     private _baseUrl: string;
     private _scene: IScene;
+    private _renderManager: IRenderManager;
 
     public constructor(baseUrl: string) {
         this._baseUrl = baseUrl;
@@ -23,15 +26,18 @@ class Session implements ISession, ISerializable {
         return this._scene;
     }
 
+    public get RenderManager(): IRenderManager {
+        return this._renderManager;
+    }
+
     public Open(apiKey: string, workspaceGuid: string): Promise<ISession> {
         return new Promise<ISession>(function(resolve, reject){
-            let request = new ApiRequest<Session>(this._baseUrl, this).Post("/session", {
+            new ApiRequest<Session>(this._baseUrl, this).Post("/session", {
                 api_key: apiKey,
                 workspace: workspaceGuid
-            });
-            request
-            .then(function(session){
-                this._scene = new Scene(this._baseUrl);
+            }).then(function(session){
+                this._scene = new Scene(this._baseUrl, this._sessionGuid);
+                this._renderManager = new RenderManager(this._baseUrl, this._sessionGuid);
                 resolve(session);
             }.bind(this))
             .catch(function(err){

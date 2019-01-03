@@ -1,10 +1,10 @@
 "use strict";
 
 import { Object3D as threejsObject3D } from "three";
-import { Camera as threejsCamera } from "three";
+import { PerspectiveCamera as threejsPerspectiveCamera } from "three";
 import { IObject3D } from "./interface/IObject3D";
 import { IScene } from "./interface/IScene";
-import { Camera, ICamera } from "./Camera";
+import { Camera } from "./Camera";
 
 const axios = require("axios");
 
@@ -12,6 +12,7 @@ const axios = require("axios");
 class Scene implements IScene {
     private _baseUrl: string;
     private _sessionGuid: string;
+    private _maxNodeName: string;
 
     public constructor(baseUrl: string, sessionGuid: string) {
         this._baseUrl = baseUrl;
@@ -28,16 +29,18 @@ class Scene implements IScene {
         return new Promise(function(resolve, reject) {
 
             axios.post(`${this._baseUrl}/scene`, {
-                session: sessionGuid
+                session: this._sessionGuid,
+                scene_filename: maxSceneFilename,
             })
             .then(function (response: any) {
-                if (response.data && response.data.guid) {
-                    this._sessionGuid = response.data.guid;
-                    resolve(response.data);
+                if (response.data && response.data.id) {
+                    this._sceneRootNode = response.data.id;
+                    resolve(this);
                 } else if (response.data && response.data.error) {
                     reject(response.data.error);
                 } else {
-                    reject("failed to handle server response");
+                    console.log(response.data);
+                    reject({ message: "failed to handle server response", response: response.data });
                 }
             }.bind(this))
             .catch(function (err: any) {
@@ -66,7 +69,7 @@ class Scene implements IScene {
     }
 
     public Create(obj: threejsObject3D): Promise<IObject3D<threejsObject3D>> {
-        if (obj.type === "Camera") return this.PostCamera(obj as unknown as threejsCamera);
+        if (obj.type === "PerspectiveCamera") return this.PostCamera(obj as unknown as threejsPerspectiveCamera);
     }
 
     public Read(maxNodeName: string): Promise<IObject3D<threejsObject3D>> {
@@ -75,22 +78,23 @@ class Scene implements IScene {
         }.bind(this));
     }
 
-    public Update(obj: threejsObject3D): Promise<IObject3D<threejsObject3D>> {
+    public Update(obj: threejsObject3D, maxNodeName: string | undefined): Promise<IObject3D<threejsObject3D>> {
         return new Promise<IObject3D<threejsObject3D>>(function(resolve, reject) {
             reject();
         }.bind(this));
     }
 
-    public Delete(obj: threejsObject3D): Promise<IObject3D<threejsObject3D>> {
+    public Delete(obj: threejsObject3D, maxNodeName: string | undefined): Promise<IObject3D<threejsObject3D>> {
         return new Promise<IObject3D<threejsObject3D>>(function(resolve, reject) {
             reject();
         }.bind(this));
     }
 
-    private PostCamera(obj: threejsCamera): Promise<IObject3D<threejsCamera>> {
-        return new Promise<IObject3D<threejsCamera>>(function(resolve, reject) {
-            var request = new Camera(this._baseUrl, obj).Post(this._sessionGuid);
-            request.then(function(camera: IObject3D<threejsCamera>){
+    private PostCamera(obj: threejsPerspectiveCamera): Promise<IObject3D<threejsPerspectiveCamera>> {
+    
+        return new Promise<IObject3D<threejsPerspectiveCamera>>(function(resolve, reject) {
+            new Camera(`${this._baseUrl}/scene/${this._sceneGuid}`, this._sessionGuid, obj).Post()
+            .then(function(camera: IObject3D<threejsPerspectiveCamera>){
                 resolve(camera);
             }.bind(this)).catch(function(err){
                 reject(err);

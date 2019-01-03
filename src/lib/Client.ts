@@ -12,12 +12,10 @@ import { IWorker } from "./interface/IWorker";
 const settings = require("../settings");
 
 class Client implements IClient {
-    private _session: Session;
+    private _session: ISession;
     private _apiKey: string;
     private _workspaceGuid: string;
     private _baseUrl: string;
-    private _scene: Scene;
-    private _renderManager: RenderManager;
 
     public constructor(apiKey: string, workspaceGuid: string) {
         this._apiKey = apiKey;
@@ -28,16 +26,8 @@ class Client implements IClient {
         return this._baseUrl;
     }
 
-    public get Scene(): IScene {
-        return this._scene;
-    }
-
     public get Session(): ISession {
         return this._session;
-    }
-
-    public get RenderManager(): IRenderManager {
-        return this._renderManager;
     }
 
     private MakeBaseUrl(host: string, port: number): string {
@@ -51,9 +41,17 @@ class Client implements IClient {
     public Connect(host: string, port: number): Promise<ISession> {
         this._baseUrl = this.MakeBaseUrl(host, port);
         this._session = new Session(this._baseUrl);
-        this._scene = new Scene(this._baseUrl);
-        this._renderManager = new RenderManager(this._baseUrl);
-        return this._session.Open(this._apiKey, this._workspaceGuid);
+        return new Promise<ISession>(function(resolve, reject){
+            this._session.Open(this._apiKey, this._workspaceGuid)
+                .then(function(session: ISession){
+                    this._scene = new Scene(this._baseUrl, session.Guid);
+                    this._renderManager = new RenderManager(this._baseUrl, session.Guid);
+                    resolve(session);
+                }.bind(this))
+                .catch(function(err){
+                    reject(err);
+                }.bind(this));
+        }.bind(this));
     }
 
     public GetWorkers(host: string, port: number): Promise<IWorker[]> {

@@ -11,6 +11,6 @@ export interface IScene {
 
     Create(obj: threejsObject3D): Promise<IObject3D<threejsObject3D>>;
     Read(maxNodeName: string): Promise<IObject3D<threejsObject3D>>;
-    Update(obj: threejsObject3D): Promise<IObject3D<threejsObject3D>>;
-    Delete(obj: threejsObject3D): Promise<IObject3D<threejsObject3D>>;
+    Update(obj: threejsObject3D, maxNodeName: string | undefined): Promise<IObject3D<threejsObject3D>>;
+    Delete(obj: threejsObject3D, maxNodeName: string | undefined): Promise<IObject3D<threejsObject3D>>;
 }

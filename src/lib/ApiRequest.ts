@@ -19,11 +19,12 @@ export class ApiRequest<T extends ISerializable> implements IApiRequest<T> {
             axios.get(`${this._baseUrl}${path}/${uid}`, { params: params })
                 .then(function (response: any) {
                     if (response.data) {
-                        resolve(this._target.Parse(response.data));
+                        resolve(this._target.Deserialize(response.data));
                     } else if (response.data && response.data.error) {
                         reject(response.data.error);
                     } else {
-                        reject("failed to handle server response");
+                        console.log(response.data);
+                        reject({ message: "failed to handle server response", data: response.data });
                     }
                 }.bind(this))
                 .catch(function (err: any) {
@@ -47,14 +48,15 @@ export class ApiRequest<T extends ISerializable> implements IApiRequest<T> {
                         let targetCtor = this._target;
                         let targets = response.data.map((d:any) => { 
                             let t = targetCtor(baseUrl);
-                            t.Parse(d);
+                            t.Deserialize(d);
                             return t;
                         });
                         resolve(targets);
                     } else if (response.data && response.data.error) {
                         reject(response.data.error);
                     } else {
-                        reject("failed to handle server response");
+                        console.log(response.data);
+                        reject({ message: "failed to handle server response", data: response.data });
                     }
                 }.bind(this))
                 .catch(function (err: any) {
@@ -74,12 +76,13 @@ export class ApiRequest<T extends ISerializable> implements IApiRequest<T> {
             axios.post(`${this._baseUrl}${path}`, data)
                 .then(function (response: any) {
                     if (response.data) {
-                        this._target.Parse(response.data);
+                        this._target.Deserialize(response.data);
                         resolve(this._target);
                     } else if (response.data && response.data.error) {
                         reject(response.data.error);
                     } else {
-                        reject("failed to handle server response");
+                        console.log(response.data);
+                        reject({ message: "failed to handle server response", data: response.data });
                     }
                 }.bind(this))
                 .catch(function (err: any) {
@@ -99,11 +102,12 @@ export class ApiRequest<T extends ISerializable> implements IApiRequest<T> {
             axios.put(`${this._baseUrl}${path}/${uid}`, data)
                 .then(function (response: any) {
                     if (response.data) {
-                        resolve(this._target.Parse(response.data));
+                        resolve(this._target.Deserialize(response.data));
                     } else if (response.data && response.data.error) {
                         reject(response.data.error);
                     } else {
-                        reject("failed to handle server response");
+                        console.log(response.data);
+                        reject({ message: "failed to handle server response", data: response.data });
                     }
                 }.bind(this))
                 .catch(function (err: any) {
@@ -123,11 +127,12 @@ export class ApiRequest<T extends ISerializable> implements IApiRequest<T> {
             axios.delete(`${this._baseUrl}${path}/${uid}`)
                 .then(function (response: any) {
                     if (response.data) {
-                        resolve(this._target.Parse(response.data));
+                        resolve(this._target.Deserialize(response.data));
                     } else if (response.data && response.data.error) {
                         reject(response.data.error);
                     } else {
-                        reject("failed to handle server response");
+                        console.log(response.data);
+                        reject({ message: "failed to handle server response", data: response.data});
                     }
                 }.bind(this))
                 .catch(function (err: any) {
