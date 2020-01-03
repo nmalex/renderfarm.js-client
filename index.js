@@ -1,21 +1,32 @@
-var client = new RFJS.Client({
-    apiKey: "75f5-4d53-b0f4",
-    protocol: "https",
-    host: "alengo3d.renderfarmjs.com",
-    port: 8000,
-});
+function render(client,
+                workspaceGuid,
+                threejsSceneObj,
+                threejsCameraObj,
+                renderSettings,
+                renderCallbacks,
+) {
+    async function main() {
+        var session = await client.openSession(workspaceGuid, "empty.max");
+        renderCallbacks['sessionOpen'] ? renderCallbacks['sessionOpen'](session) : null;
+        await session.refresh();
 
-var workspaceGuid = "55a0bd33-9f15-4bc0-a482-17899eb67af3";
+        var scene = await client.createScene(threejsSceneObj, threejsCameraObj);
+        renderCallbacks['sceneCreated'] ? renderCallbacks['sceneCreated'](scene) : null;
 
-async function main() {
-    var session = await client.openSession(workspaceGuid);
-    console.log(` >> session open: `, session);
+        var job = await client.createJob(
+            threejsCameraObj.name,
+            renderSettings.width,
+            renderSettings.height,
+            null, // onStarted
+            null, // onProgress
+            renderCallbacks['renderComplete'],
+        );
+        renderCallbacks['jobCreated'] ? renderCallbacks['jobCreated'](job) : null;
+    }
 
-    var closedSession = await session.close();
-    console.log(` >> session closed: `, closedSession);
+    main().then(function(){
+    }).catch(function(err){
+        console.error(err);
+        renderCallbacks['error'] ? renderCallbacks['error'](err) : null;
+    });
 }
-
-main().then(function(){
-}).catch(function(err){
-    console.error(err);
-});

@@ -1,22 +1,46 @@
 const axios = require('axios');
 
+import Scene from './Scene'
+
 export default class Session {
     constructor(baseUrl, apiKey) {
         this.baseUrl = baseUrl;
         this.apiKey  = apiKey;
+        this.data = null;
     }
 
-    async open(workspaceGuid) {
+    get guid() {
+        return this.data ? this.data.guid : null;
+    }
+
+    async open(workspaceGuid, maxSceneFilename) {
         return new Promise(async function(resolve, reject){
             try {
                 var response = await axios.post(this.baseUrl + '/session', {
                     api_key: this.apiKey,
                     workspace_guid: workspaceGuid,
+                    scene_filename: maxSceneFilename,
                 });
-                console.log(` >> session open: `, response);
-                this.guid = response.data.data.guid;
+                this.data = response.data.data;
                 resolve(this);
             } catch (err) {
+                this.error = err;
+                reject(err);
+            }
+        }.bind(this))
+    }
+
+    async refresh() {
+        return new Promise(async function(resolve, reject){
+            if (!this.data) {
+                reject(new Error("session closed"));
+            }
+            try {
+                var response = await axios.get(this.baseUrl + '/session/' + this.data.guid, {});
+                this.data = response.data.data;
+                resolve(this);
+            } catch (err) {
+                this.error = err;
                 reject(err);
             }
         }.bind(this))
@@ -24,12 +48,15 @@ export default class Session {
 
     async close() {
         return new Promise(async function(resolve, reject){
+            if (!this.data) {
+                reject(new Error("session closed"));
+            }
             try {
-                var response = await axios.delete(this.baseUrl + '/session/' + this.guid, {});
-                console.log(` >> session closed: `, response);
-                this.guid = null;
+                var response = await axios.delete(this.baseUrl + '/session/' + this.data.guid, {});
+                this.data = response.data.data;
                 resolve(this);
             } catch (err) {
+                this.error = err;
                 reject(err);
             }
         }.bind(this))
