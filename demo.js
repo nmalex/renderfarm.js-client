@@ -95,39 +95,31 @@ function initScene() {
         geometry = new THREE.BufferGeometry().fromGeometry(geometry);
 
     var materialWhite = new THREE.MeshPhongMaterial({ 
+        name: "WhiteGlass",
         color: 0xffffff,
         transparent: false,
         opacity: 0.95,
-        userData: {
-            materialName: "WhiteGlass"
-        }
     });
 
     var materialRed = new THREE.MeshPhongMaterial({ 
+        name: "RedGlass",
         color: 0xff0000,
         transparent: false,
         opacity: 0.95,
-        userData: {
-            materialName: "RedGlass"
-        }
     });
 
     var materialGreen = new THREE.MeshPhongMaterial({ 
+        name: "GreenGlass",
         color: 0x00ff00,
         transparent: false,
-        opacity: 0.95,
-        userData: {
-            materialName: "GreenGlass"
-        }
+        opacity: 0.95
     });
 
     var materialBlue = new THREE.MeshPhongMaterial({ 
+        name: "BlueGlass",
         color: 0x0000ff,
         transparent: false,
         opacity: 0.95,
-        userData: {
-            materialName: "BlueGlass"
-        }
     });
 
     var cube = new THREE.Mesh(geometry, materialWhite);
@@ -203,13 +195,11 @@ function initScene() {
     var planeGeometry = new THREE.PlaneGeometry( 15, 15, 1 );
         planeGeometry = new THREE.BufferGeometry().fromGeometry(planeGeometry);
     var material = new THREE.MeshPhongMaterial({
+        name: "Floor",
         color: 0xf0ffff, 
         transparent: true,
         opacity: 0.5,
-        side: THREE.DoubleSide,
-        userData: {
-            materialName: "Floor"
-        }
+        side: THREE.DoubleSide
     });
 
     var plane = new THREE.Mesh( planeGeometry, material );
