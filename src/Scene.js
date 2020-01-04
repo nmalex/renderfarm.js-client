@@ -25,7 +25,33 @@ export default class Scene {
             delete sceneJson.geometries;
         }
 
-        var p0 = __postGeometries.call(this, geometriesJson);
+        function __collectGeometries(node, target)  {
+            if (!node) return;
+            if (node.geometry && !target[geometry.uuid] && node.geometry.type.indexOf("BufferGeometry") !== -1) {
+                const parameters = node.geometry.parameters;
+                if (node.geometry.parameters) {
+                    delete node.geometry.parameters;
+                }
+                try {
+                    const json = THREE.BufferGeometry.prototype.toJSON.call(node.geometry);
+                    json.type = "BufferGeometry";
+                    target[node.geometry.uuid] = json;
+                } catch (err) {
+                    console.warn(err);
+                }
+                node.geometry.parameters = parameters;
+            }
+            if (node.children) {
+                for (const child of node.children) {
+                    __collectGeometries(child, target);
+                }
+            }
+        }
+
+        var sceneGeometries = {};
+        __collectGeometries(threejsSceneObj, sceneGeometries);
+
+        var p0 = __postGeometries.call(this, geometriesJson); // Object.values(sceneGeometries));
         var p1 = __postMaterials.call(this, materialsJson);
 
         await Promise.all([p0, p1]);
@@ -58,7 +84,9 @@ function __postGeometries(geometriesJson) {
         if (geometriesJson[i].type.indexOf("BufferGeometry") > 0) {
               var g = geometriesJson[i];
               var geometries = THREE.ObjectLoader.prototype.parseGeometries([g]);
-              delete geometries[g.uuid].parameters;
+              if (geometries[g.uuid].parameters) {
+                  delete geometries[g.uuid].parameters;
+              }
               var ni = geometries[g.uuid].toNonIndexed();
               var bufferGeometryJson = THREE.BufferGeometry.prototype.toJSON.call(ni);
               bufferGeometryJson.uuid = g.uuid;
@@ -69,17 +97,22 @@ function __postGeometries(geometriesJson) {
 
     console.log("Posting geometries: ", geometriesJson);
 
-    var geometryText = JSON.stringify(geometriesJson);
-    if (!LZString) {
-        throw new Error('LZString is not found');
-    }
-    var compressedGeometryData = LZString.compressToBase64(geometryText);
+    for (const i in geometriesJson) {
+        const geometryJson = geometriesJson[i];
+        var geometryText = JSON.stringify(geometryJson);
 
-    return axios.post(this.baseUrl  + '/three/geometry', {
-        session_guid: this.sessionGuid,
-        compressed_json: compressedGeometryData,
-        generate_uv2: false,
-    });
+        if (!LZString) {
+            throw new Error('LZString is not found');
+        }
+
+        var compressedGeometryData = LZString.compressToBase64(geometryText);
+
+        axios.post(this.baseUrl  + '/three/geometry', {
+            session_guid: this.sessionGuid,
+            compressed_json: compressedGeometryData,
+            generate_uv2: false,
+        });
+    }
 }
 
 function __postMaterials(materialsJson) {
