@@ -1,4 +1,5 @@
 var THREE = require('three');
+var JSZip = require("jszip");
 const axios = require('axios');
 
 export default class Scene {
@@ -51,7 +52,7 @@ export default class Scene {
         var sceneGeometries = {};
         __collectGeometries(threejsSceneObj, sceneGeometries);
 
-        var p0 = __postGeometries.call(this, geometriesJson); // Object.values(sceneGeometries));
+        var p0 = __postGeometries.call(this, Object.values(sceneGeometries));
         var p1 = __postMaterials.call(this, materialsJson);
 
         await Promise.all([p0, p1]);
@@ -97,22 +98,49 @@ function __postGeometries(geometriesJson) {
 
     console.log("Posting geometries: ", geometriesJson);
 
-    for (const i in geometriesJson) {
-        const geometryJson = geometriesJson[i];
-        var geometryText = JSON.stringify(geometryJson);
+    const promises = [];
+        const postQueue = geometriesJson.slice();
 
-        if (!LZString) {
-            throw new Error('LZString is not found');
+        while (postQueue.length > 0) {
+            const geometryJson = postQueue.pop();
+            const geometryText = JSON.stringify(geometryJson);
+
+            //if (!LZString) {
+            //    throw new Error('LZString is not found');
+            //}
+            // var compressedGeometryData = LZString.compressToBase64(geometryText);
+            // console.log(` >> LZString results: `, geometryJson.uuid, compressedGeometryData.length, geometryText.length, compressedGeometryData.length / geometryText.length);
+
+            var pr = new Promise(function(resolve, reject){
+                var zip = new JSZip();
+                zip.file("BufferGeometry.json", geometryText);
+                zip.generateAsync({type:"base64",compression: "DEFLATE",compressionOptions: { level: 9 }}, function updateCallback(metadata) {
+                    if(metadata.currentFile) {
+                        //console.log(" >> progress: ", metadata.currentFile, metadata.percent.toFixed(2) + " %");
+                    }
+                }).then(function (content) {
+                    // see FileSaver.js
+                    console.log(` >> compressed: `, geometryJson.uuid, content.length, geometryText.length, content.length / geometryText.length);
+                    resolve(content);
+                });
+
+            }.bind(this)).then(function(content) {
+                const url = this.baseUrl  + '/three/geometry';
+                const compressedGeometryData = content;
+                console.log(` >> POST: `, url, content.length);
+                return axios.post(url, {
+                    session_guid: this.sessionGuid,
+                    uuid: geometryJson.uuid,
+                    compressed_json: compressedGeometryData,
+                    // json: geometryText, // in case you prefer traffic over time
+                    generate_uv2: false,
+                });
+            }.bind(this));
+
+            promises.push(pr);
         }
 
-        var compressedGeometryData = LZString.compressToBase64(geometryText);
-
-        axios.post(this.baseUrl  + '/three/geometry', {
-            session_guid: this.sessionGuid,
-            compressed_json: compressedGeometryData,
-            generate_uv2: false,
-        });
-    }
+    return Promise.all(promises);
 }
 
 function __postMaterials(materialsJson) {
