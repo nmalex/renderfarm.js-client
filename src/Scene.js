@@ -16,6 +16,10 @@ export default class Scene {
         this.sessionGuid = sessionGuid;
 
         var sceneJson = threejsSceneObj.toJSON();
+        if (threejsCameraObj) {
+            sceneJson.object.children.unshift(threejsCameraObj.toJSON().object);
+        }
+
         var geometriesJson = sceneJson.geometries;
         var materialsJson = sceneJson.materials;
 
