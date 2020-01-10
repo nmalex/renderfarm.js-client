@@ -1,6 +1,6 @@
 {
   "name": "renderfarm",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "three.js server side rendering client",
   "main": "dist/renderfarm.js",
   "scripts": {

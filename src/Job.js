@@ -6,16 +6,17 @@ export default class Job {
         this.apiKey      = apiKey;
     }
 
-    async post(sessionGuid, cameraName, width, height) {
+    async post(sessionGuid, threejsCameraObj, width, height) {
         return new Promise(async function(resolve, reject) {
             try {
                 var response = await axios.post(this.baseUrl + '/job', {
                     session_guid: sessionGuid,
                     render_width: width, 
                     render_height: height, 
-                    progressiveMaxRenderTime: 5.0,
-                    progressiveNoiseThreshold: 0.01,
                     camera_json: threejsCameraObj.toJSON().object,
+                    render_settings: {
+                        // use it to pass direct vray settings
+                    }
                 });
                 this.data = response.data.data;
                 resolve(this);
