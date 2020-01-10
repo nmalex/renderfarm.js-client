@@ -13,9 +13,9 @@ export default class Job {
                     session_guid: sessionGuid,
                     render_width: width, 
                     render_height: height, 
-                    camera_name: cameraName,
                     progressiveMaxRenderTime: 5.0,
                     progressiveNoiseThreshold: 0.01,
+                    camera_json: threejsCameraObj.toJSON().object,
                 });
                 this.data = response.data.data;
                 resolve(this);
