@@ -28,7 +28,7 @@ export default class Scene {
 
         function __collectGeometries(node, target)  {
             if (!node) return;
-            if (node.geometry && !target[geometry.uuid] && node.geometry.type.indexOf("BufferGeometry") !== -1) {
+            if (node.geometry && !target[node.geometry.uuid] && node.geometry.type.indexOf("BufferGeometry") !== -1) {
                 const parameters = node.geometry.parameters;
                 if (node.geometry.parameters) {
                     delete node.geometry.parameters;
