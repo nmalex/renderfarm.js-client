@@ -11,8 +11,9 @@ export default class Job {
             try {
                 var response = await axios.post(this.baseUrl + '/job', {
                     session_guid: sessionGuid,
-                    render_width: width, 
-                    render_height: height, 
+                    render_width: width,
+                    render_height: height,
+                    alpha: false,
                     camera_json: threejsCameraObj.toJSON().object,
                     render_settings: {
                         // use it to pass direct vray settings
