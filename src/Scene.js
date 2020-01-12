@@ -17,6 +17,7 @@ export default class Scene {
 
         var sceneJson = threejsSceneObj.toJSON();
         if (threejsCameraObj) {
+            console.log(` >> threejsCameraObj: `, threejsCameraObj);
             sceneJson.object.children.unshift(threejsCameraObj.toJSON().object);
         }
 
@@ -28,6 +29,12 @@ export default class Scene {
         }
         if (sceneJson.geometries) {
             delete sceneJson.geometries;
+        }
+        if (sceneJson.textures) {
+            delete sceneJson.textures;
+        }
+        if (sceneJson.images) {
+            delete sceneJson.images;
         }
 
         function __collectGeometries(node, target)  {
