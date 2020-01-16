@@ -18,6 +18,8 @@ export default class Job {
                     render_settings: {
                         // use it to pass direct vray settings
                     }
+                }, {
+                    timeout: 15*60*1000, // 15min timeout
                 });
                 this.data = response.data.data;
                 resolve(this);
