@@ -24,10 +24,10 @@ export default class Client {
         return this.scene.post(this.session.guid, threejsSceneObj, threejsCameraObj);
     }
 
-    async createJob(threejsCameraObj, width, height, onStarted, onProgress, onImageReady, onError) {
+    async createJob(threejsCameraObj, renderSettings, onStarted, onProgress, onImageReady, onError) {
         this.job = new Job(this.baseUrl, this.apiKey);
 
-        var promise = this.job.post(this.session.guid, threejsCameraObj, width, height);
+        var promise = this.job.post(this.session.guid, threejsCameraObj, renderSettings);
         promise.then(async function(){
 
             var jobInfo = await this.job.get();
