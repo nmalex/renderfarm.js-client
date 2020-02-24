@@ -1,4 +1,4 @@
-var THREE = require('three');
+// var THREE = require('three');
 var JSZip = require("jszip");
 const axios = require('axios');
 
@@ -17,7 +17,6 @@ export default class Scene {
 
         var sceneJson = threejsSceneObj.toJSON();
         if (threejsCameraObj) {
-            console.log(` >> threejsCameraObj: `, threejsCameraObj);
             sceneJson.object.children.unshift(threejsCameraObj.toJSON().object);
         }
 
@@ -40,18 +39,22 @@ export default class Scene {
         function __collectGeometries(node, target)  {
             if (!node) return;
             if (node.geometry && !target[node.geometry.uuid] && node.geometry.type.indexOf("BufferGeometry") !== -1) {
-                const parameters = node.geometry.parameters;
-                if (node.geometry.parameters) {
-                    delete node.geometry.parameters;
+                if (node.geometry && node.geometry.renderable === false || node.userData && node.userData.renderable === false) {
+                    // don't collect it
+                } else {
+                    const parameters = node.geometry.parameters;
+                    if (node.geometry.parameters) {
+                        delete node.geometry.parameters;
+                    }
+                    try {
+                        const json = THREE.BufferGeometry.prototype.toJSON.call(node.geometry);
+                        json.type = "BufferGeometry";
+                        target[node.geometry.uuid] = json;
+                    } catch (err) {
+                        console.warn(err);
+                    }
+                    node.geometry.parameters = parameters;
                 }
-                try {
-                    const json = THREE.BufferGeometry.prototype.toJSON.call(node.geometry);
-                    json.type = "BufferGeometry";
-                    target[node.geometry.uuid] = json;
-                } catch (err) {
-                    console.warn(err);
-                }
-                node.geometry.parameters = parameters;
             }
             if (node.children) {
                 for (const child of node.children) {
@@ -115,12 +118,6 @@ function __postGeometries(geometriesJson) {
         while (postQueue.length > 0) {
             const geometryJson = postQueue.pop();
             const geometryText = JSON.stringify(geometryJson);
-
-            //if (!LZString) {
-            //    throw new Error('LZString is not found');
-            //}
-            // var compressedGeometryData = LZString.compressToBase64(geometryText);
-            // console.log(` >> LZString results: `, geometryJson.uuid, compressedGeometryData.length, geometryText.length, compressedGeometryData.length / geometryText.length);
 
             var pr = new Promise(function(resolve, reject){
                 var zip = new JSZip();
