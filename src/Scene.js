@@ -15,7 +15,35 @@ export default class Scene {
     async post(sessionGuid, threejsSceneObj, threejsCameraObj) {
         this.sessionGuid = sessionGuid;
 
+        const userDataBackup = {};
+        // first remove userData objects that may cause circular references
+        threejsSceneObj.traverse(function(child) {
+            if (child.userData) {
+                const userDataKeys = Object.keys(child.userData);
+                if (userDataKeys.length > 0) {
+                    const newUserData = {...child.userData};
+                    userDataBackup[child.uuid] = {
+                        ref: child,
+                        userData: child.userData,
+                    }
+                    child.userData = newUserData;
+                    const allKeys = Object.keys(child.userData);
+                    for (const key of allKeys) {
+                        if (child.userData[key].serializable === false) {
+                            delete child.userData[key];
+                        }
+                    }
+                }
+            }
+        }.bind(this));
+
         var sceneJson = threejsSceneObj.toJSON();
+        // now can recover original userData
+        for (const key of Object.keys(userDataBackup)) {
+            const backup = userDataBackup[key];
+            backup.ref.userData = backup.userData;
+        }
+
         if (threejsCameraObj) {
             sceneJson.object.children.unshift(threejsCameraObj.toJSON().object);
         }
@@ -39,7 +67,9 @@ export default class Scene {
         function __collectGeometries(node, target)  {
             if (!node) return;
             if (node.geometry && !target[node.geometry.uuid] && node.geometry.type.indexOf("BufferGeometry") !== -1) {
-                if (node.geometry && node.geometry.renderable === false || node.userData && node.userData.renderable === false) {
+                if (   node.geometry && node.geometry.renderable === false
+                    || node.userData && node.userData.renderable === false
+                ) {
                     // don't collect it
                 } else {
                     const parameters = node.geometry.parameters;
@@ -57,15 +87,45 @@ export default class Scene {
                 }
             }
             if (node.children) {
-                for (const child of node.children) {
-                    __collectGeometries(child, target);
+                if (node.userData && node.userData.childrenRenderable === false) {
+                    // ignore children
+                } else {
+                    for (const child of node.children) {
+                        __collectGeometries(child, target);
+                    }
                 }
             }
         }
-
+        
+        // now collect geometries, and cleanup scene graph from not renderable objects
         var sceneGeometries = {};
         __collectGeometries(threejsSceneObj, sceneGeometries);
 
+        function __removeNotRenderable(node)  {
+            if (!node) return;
+            
+            if (   node.geometry && node.geometry.renderable === false
+                || node.userData && node.userData.renderable === false
+            ) {
+                // not renderable => convert to Object3D and drop geometry and material links
+                node.type = "Object3D";
+                delete node.geometry;
+                delete node.material;
+            }
+
+            if (node.children) {
+                if (node.userData && node.userData.childrenRenderable === false) {
+                    node.children = [];
+                } else {
+                    for (const child of node.children) {
+                        __removeNotRenderable(child);
+                    }
+                }
+            }
+        }
+        __removeNotRenderable(sceneJson.object);
+
+        // ==
         var p0 = __postGeometries.call(this, Object.values(sceneGeometries));
         var p1 = __postMaterials.call(this, materialsJson);
 
