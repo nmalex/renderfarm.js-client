@@ -45,11 +45,14 @@ export default class Scene {
         }
 
         if (threejsCameraObj) {
+            if (!sceneJson.object.children) {
+                sceneJson.object.children = [];
+            }
             sceneJson.object.children.unshift(threejsCameraObj.toJSON().object);
         }
 
         var geometriesJson = sceneJson.geometries;
-        var materialsJson = sceneJson.materials;
+        var materialsJson = sceneJson.materials || [];
 
         if (sceneJson.materials) {
             delete sceneJson.materials;
