@@ -141,9 +141,9 @@ export default class Scene {
 
         // ==
         var p0 = __postGeometries.call(this, Object.values(sceneGeometries));
-        var p1 = __postImages.call(this, imagesJson);
-        var p2 = __postTextures.call(this, texturesJson);
-        await Promise.all([p0, p1, p2]);
+        // var p1 = __postImages.call(this, imagesJson);
+        // var p2 = __postTextures.call(this, texturesJson);
+        await Promise.all([p0, /*p1, p2*/]);
 
         var p3 = __postMaterials.call(this, materialsJson);
         await Promise.all([p3]);
