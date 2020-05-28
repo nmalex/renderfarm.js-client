@@ -35,23 +35,29 @@ export default class Scene {
                     }
                 }
             }
-        }.bind(this));
+        });
 
+        // serialize scene
         var sceneJson = threejsSceneObj.toJSON();
+
         // now can recover original userData
         for (const key of Object.keys(userDataBackup)) {
             const backup = userDataBackup[key];
             backup.ref.userData = backup.userData;
         }
 
+        // add camera to scene
         if (threejsCameraObj) {
             if (!sceneJson.object.children) {
                 sceneJson.object.children = [];
             }
-            sceneJson.object.children.unshift(threejsCameraObj.toJSON().object);
+            const camIdx = sceneJson.object.children.findIndex(el => el.uuid === threejsCameraObj.uuid);
+            if (camIdx === -1) {
+                sceneJson.object.children.unshift(threejsCameraObj.toJSON().object);
+            }
         }
 
-        var geometriesJson = sceneJson.geometries;
+        var geometriesJson = sceneJson.geometries || [];
         var materialsJson = sceneJson.materials || [];
 
         if (sceneJson.materials) {
@@ -60,9 +66,12 @@ export default class Scene {
         if (sceneJson.geometries) {
             delete sceneJson.geometries;
         }
+
+        var texturesJson = sceneJson.textures || [];
         if (sceneJson.textures) {
             delete sceneJson.textures;
         }
+        var imagesJson = sceneJson.images || [];
         if (sceneJson.images) {
             delete sceneJson.images;
         }
@@ -100,7 +109,7 @@ export default class Scene {
             }
         }
         
-        // now collect geometries, and cleanup scene graph from not renderable objects
+        // now collect geometries
         var sceneGeometries = {};
         __collectGeometries(threejsSceneObj, sceneGeometries);
 
@@ -126,24 +135,22 @@ export default class Scene {
                 }
             }
         }
+
+        // now remove from scene not renderable objects
         __removeNotRenderable(sceneJson.object);
 
         // ==
         var p0 = __postGeometries.call(this, Object.values(sceneGeometries));
-        var p1 = __postMaterials.call(this, materialsJson);
+        var p1 = __postImages.call(this, imagesJson);
+        var p2 = __postTextures.call(this, texturesJson);
+        await Promise.all([p0, p1, p2]);
 
-        await Promise.all([p0, p1]);
+        var p3 = __postMaterials.call(this, materialsJson);
+        await Promise.all([p3]);
 
         var s0 = await __postScene.call(this, sceneJson);
 
-        return new Promise(async function(resolve, reject){
-            try {
-                resolve(this);
-            } catch (err) {
-                this.error = err;
-                reject(err);
-            }
-        }.bind(this))
+        return Promise.resolve(this);
     }
 }
 
@@ -210,6 +217,36 @@ function __postGeometries(geometriesJson) {
 
             promises.push(pr);
         }
+
+    return Promise.all(promises);
+}
+
+function __postImages(imagesJson) {
+    console.log("Posting images: ", imagesJson);
+
+    const promises = [];
+    for (const json of imagesJson) {
+        const p = axios.post(this.baseUrl  + '/three/image', {
+            session_guid: this.sessionGuid,
+            json,
+        });
+        promises.push(p);
+    }
+
+    return Promise.all(promises);
+}
+
+function __postTextures(texturesJson) {
+    console.log("Posting textures: ", texturesJson);
+
+    const promises = [];
+    for (const json of texturesJson) {
+        const p = axios.post(this.baseUrl  + '/three/texture', {
+            session_guid: this.sessionGuid,
+            json,
+        });
+        promises.push(p);
+    }
 
     return Promise.all(promises);
 }
