@@ -165,6 +165,9 @@ function __rfarmNode(threeNodeRef, maxNodeName) {
 function __postGeometries(geometriesJson) {
 
     for (const i in geometriesJson) {
+        if (!geometriesJson[i].type) {
+              continue;
+        }
         // not exactly "BufferGeometry"? ,for example "BoxBufferGeometry"
         if (geometriesJson[i].type.indexOf("BufferGeometry") > 0) {
               var g = geometriesJson[i];
