@@ -1,8 +1,17 @@
 src/
+
 *.tsconfig
+*.js
+*.html
+jasmine.json
+
 dist/browser.js
 dist/*.spec.js
 dist/*.Spec.js
+
 test_client/
 build/
 bundle/
+css/
+js/
+img/

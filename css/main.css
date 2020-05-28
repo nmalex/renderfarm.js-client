@@ -1,0 +1,33 @@
+body {
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+}
+#output {
+    background-image: url(./img/vray.png);
+    width: 640px;
+    height: 480px;
+}
+#viewport {
+    width: 640px;
+    height: 480px;
+}
+#canvas-wrapper {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 640px;
+    top: 480px;
+}
+.toolbar {
+    padding: 2px;
+    line-height: 32px;
+}
+.status {
+    margin-left: 8px;
+    display: inline-block;
+    font-size: 10pt;
+}
+.twentytwenty-overlay {
+    display: none;
+}

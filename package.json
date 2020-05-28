@@ -1,11 +1,11 @@
 {
   "name": "renderfarm",
-  "version": "1.0.17",
+  "version": "1.1.7",
   "description": "three.js server side rendering client",
-  "main": "dist/main.js",
+  "main": "dist/renderfarm.js",
   "scripts": {
-    "build": "tsc --declaration & browserify ./dist/browser.js > ./bundle/renderfarm.js",
-    "test": "tsc & jasmine --config=jasmine.json"
+    "build": "webpack --config webpack.config.js",
+    "test": "jasmine --config=jasmine.json"
   },
   "repository": {
     "type": "git",
@@ -18,15 +18,15 @@
   },
   "homepage": "https://github.com/nmalex/renderfarm.js-client#readme",
   "dependencies": {
-    "@types/three": "^0.93.14",
     "axios": "^0.18.0",
+    "jszip": "^3.2.2",
     "lz-string": "^1.4.4",
     "three": "^0.99.0"
   },
   "devDependencies": {
-    "@types/jasmine": "^2.8.11",
-    "@types/node": "^10.12.2",
     "ftp": "^0.3.10",
-    "reflect-metadata": "^0.1.12"
+    "reflect-metadata": "^0.1.12",
+    "webpack": "^4.41.5",
+    "webpack-cli": "^3.3.10"
   }
 }
