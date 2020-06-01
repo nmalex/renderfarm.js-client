@@ -4,8 +4,8 @@ const axios = require('axios');
 
 export default class Scene {
     constructor(baseUrl, apiKey) {
-        this.baseUrl     = baseUrl;
-        this.apiKey      = apiKey;
+        this.baseUrl = baseUrl;
+        this.apiKey = apiKey;
 
         this.geometries = {};  // here we map scene geometry uuid <==> backend geometry resource
         this.materials = {};   // here we map scene material uuid <==> backend material resource
@@ -17,11 +17,11 @@ export default class Scene {
 
         const userDataBackup = {};
         // first remove userData objects that may cause circular references
-        threejsSceneObj.traverse(function(child) {
+        threejsSceneObj.traverse(function (child) {
             if (child.userData) {
                 const userDataKeys = Object.keys(child.userData);
                 if (userDataKeys.length > 0) {
-                    const newUserData = {...child.userData};
+                    const newUserData = { ...child.userData };
                     userDataBackup[child.uuid] = {
                         ref: child,
                         userData: child.userData,
@@ -76,10 +76,10 @@ export default class Scene {
             delete sceneJson.images;
         }
 
-        function __collectGeometries(node, target)  {
+        function __collectGeometries(node, target) {
             if (!node) return;
             if (node.geometry && !target[node.geometry.uuid] && node.geometry.type && node.geometry.type.indexOf("BufferGeometry") !== -1) {
-                if (   node.geometry && node.geometry.renderable === false
+                if (node.geometry && node.geometry.renderable === false
                     || node.userData && node.userData.renderable === false
                 ) {
                     // don't collect it
@@ -108,15 +108,14 @@ export default class Scene {
                 }
             }
         }
-        
         // now collect geometries
         var sceneGeometries = {};
         __collectGeometries(threejsSceneObj, sceneGeometries);
 
-        function __removeNotRenderable(node)  {
+        function __removeNotRenderable(node) {
             if (!node) return;
-            
-            if (   node.geometry && node.geometry.renderable === false
+
+            if (node.geometry && node.geometry.renderable === false
                 || node.userData && node.userData.renderable === false
             ) {
                 // not renderable => convert to Object3D and drop geometry and material links
@@ -140,15 +139,16 @@ export default class Scene {
         __removeNotRenderable(sceneJson.object);
 
         // ==
-        var p0 = __postGeometries.call(this, Object.values(sceneGeometries));
+        await __postGeometries.call(this, Object.values(sceneGeometries));
+
         // var p1 = __postImages.call(this, imagesJson);
         // var p2 = __postTextures.call(this, texturesJson);
-        await Promise.all([p0, /*p1, p2*/]);
+        // await Promise.all([p0, /*p1, p2*/]);
 
-        var p3 = __postMaterials.call(this, materialsJson);
-        await Promise.all([p3]);
+        // var p3 = __postMaterials.call(this, materialsJson);
+        // await Promise.all([p3]);
 
-        var s0 = await __postScene.call(this, sceneJson);
+        await __postScene.call(this, sceneJson);
 
         return Promise.resolve(this);
     }
@@ -162,66 +162,71 @@ function __rfarmNode(threeNodeRef, maxNodeName) {
     };
 }
 
-function __postGeometries(geometriesJson) {
+async function __postGeometries(geometriesJson) {
 
     for (const i in geometriesJson) {
         if (!geometriesJson[i].type) {
-              continue;
+            continue;
         }
         // not exactly "BufferGeometry"? ,for example "BoxBufferGeometry"
         if (geometriesJson[i].type.indexOf("BufferGeometry") > 0) {
-              var g = geometriesJson[i];
-              var geometries = THREE.ObjectLoader.prototype.parseGeometries([g]);
-              if (geometries[g.uuid].parameters) {
-                  delete geometries[g.uuid].parameters;
-              }
-              var ni = geometries[g.uuid].toNonIndexed();
-              var bufferGeometryJson = THREE.BufferGeometry.prototype.toJSON.call(ni);
-              bufferGeometryJson.uuid = g.uuid;
-              bufferGeometryJson.type = "BufferGeometry";
-              geometriesJson[i] = bufferGeometryJson;
+            var g = geometriesJson[i];
+            var geometries = THREE.ObjectLoader.prototype.parseGeometries([g]);
+            if (geometries[g.uuid].parameters) {
+                delete geometries[g.uuid].parameters;
+            }
+            var ni = geometries[g.uuid].toNonIndexed();
+            var bufferGeometryJson = THREE.BufferGeometry.prototype.toJSON.call(ni);
+            bufferGeometryJson.uuid = g.uuid;
+            bufferGeometryJson.type = "BufferGeometry";
+            geometriesJson[i] = bufferGeometryJson;
         }
     }
 
     console.log("Posting geometries: ", geometriesJson);
 
     const promises = [];
-        const postQueue = geometriesJson.slice();
+    const postQueue = geometriesJson.slice();
 
-        while (postQueue.length > 0) {
-            const geometryJson = postQueue.pop();
-            const geometryText = JSON.stringify(geometryJson);
+    while (postQueue.length > 0) {
+        const geometryJson = postQueue.pop();
+        const geometryText = JSON.stringify(geometryJson);
 
-            var pr = new Promise(function(resolve, reject){
-                var zip = new JSZip();
-                zip.file("BufferGeometry.json", geometryText);
-                zip.generateAsync({type:"base64",compression: "DEFLATE",compressionOptions: { level: 9 }}, function updateCallback(metadata) {
-                    if(metadata.currentFile) {
-                        //console.log(" >> progress: ", metadata.currentFile, metadata.percent.toFixed(2) + " %");
-                    }
-                }).then(function (content) {
-                    // see FileSaver.js
-                    console.log(` >> compressed: `, geometryJson.uuid, content.length, geometryText.length, content.length / geometryText.length);
-                    resolve(content);
-                });
+        var pr = new Promise(function (resolve, reject) {
+            var zip = new JSZip();
+            zip.file("BufferGeometry.json", geometryText);
+            zip.generateAsync({ type: "base64", compression: "DEFLATE", compressionOptions: { level: 9 } }, function updateCallback(metadata) {
+                if (metadata.currentFile) {
+                    //console.log(" >> progress: ", metadata.currentFile, metadata.percent.toFixed(2) + " %");
+                }
+            }).then(function (content) {
+                // see FileSaver.js
+                console.log(` >> compressed: `, geometryJson.uuid, content.length, geometryText.length, content.length / geometryText.length);
+                resolve(content);
+            });
 
-            }.bind(this)).then(function(content) {
-                const url = this.baseUrl  + '/three/geometry';
-                const compressedGeometryData = content;
-                console.log(` >> POST: `, url, content.length);
-                return axios.post(url, {
-                    session_guid: this.sessionGuid,
-                    uuid: geometryJson.uuid,
-                    compressed_json: compressedGeometryData,
-                    // json: geometryText, // in case you prefer traffic over time
-                    generate_uv2: false,
-                });
-            }.bind(this));
+        }.bind(this)).then(function (content) {
+            const url = this.baseUrl + '/three/geometry';
+            const compressedGeometryData = content;
+            console.log(` >> POST: `, url, content.length);
+            return axios.post(url, {
+                session_guid: this.sessionGuid,
+                uuid: geometryJson.uuid,
+                compressed_json: compressedGeometryData,
+                // json: geometryText, // in case you prefer traffic over time
+                generate_uv2: false,
+            });
+        }.bind(this));
 
-            promises.push(pr);
+        promises.push(pr);
+
+        if (promises.length > 16) {
+            await Promise.all(promises);
+            promises.splice(0, promises.length);
         }
+    }
 
-    return Promise.all(promises);
+    await Promise.all(promises);
 }
 
 function __postImages(imagesJson) {
@@ -229,7 +234,7 @@ function __postImages(imagesJson) {
 
     const promises = [];
     for (const json of imagesJson) {
-        const p = axios.post(this.baseUrl  + '/three/image', {
+        const p = axios.post(this.baseUrl + '/three/image', {
             session_guid: this.sessionGuid,
             json,
         });
@@ -244,7 +249,7 @@ function __postTextures(texturesJson) {
 
     const promises = [];
     for (const json of texturesJson) {
-        const p = axios.post(this.baseUrl  + '/three/texture', {
+        const p = axios.post(this.baseUrl + '/three/texture', {
             session_guid: this.sessionGuid,
             json,
         });
@@ -263,7 +268,7 @@ function __postMaterials(materialsJson) {
     }
     var compressedMaterialData = LZString.compressToBase64(materialText);
 
-    return axios.post(this.baseUrl  + '/three/material', {
+    return axios.post(this.baseUrl + '/three/material', {
         session_guid: this.sessionGuid,
         compressed_json: compressedMaterialData,
     });
@@ -278,7 +283,7 @@ function __postScene(sceneJson) {
     }
     var compressedSceneData = LZString.compressToBase64(sceneText);
 
-    return axios.post(this.baseUrl  + '/three', {
+    return axios.post(this.baseUrl + '/three', {
         session_guid: this.sessionGuid,
         compressed_json: compressedSceneData,
     });
@@ -321,9 +326,9 @@ rfarm.createCamera = function(camera, onCameraReady) {
 
     $.ajax({
         url: this.baseUrl  + "/scene/0/camera",
-        data: { 
+        data: {
             session: this.sessionId,
-            camera: compressedCameraData 
+            camera: compressedCameraData
         },
         type: 'POST',
         success: function(result) {
@@ -343,8 +348,8 @@ rfarm.createSkylight = function(onCreated) {
 
     $.ajax({
         url: this.baseUrl  + "/scene/0/skylight",
-        data: { 
-            session: this.sessionId, 
+        data: {
+            session: this.sessionId,
         },
         type: 'POST',
         success: function(result) {
@@ -374,7 +379,7 @@ rfarm.createSpotlight = function(spotlight, spotlightTarget, onCreated) {
 
     $.ajax({
         url: this.baseUrl  + "/scene/0/spotlight",
-        data: { 
+        data: {
             session: this.sessionId,
             spotlight: compressedSpotlightData
         },
@@ -395,7 +400,7 @@ rfarm.createJob = function(sessionGuid, cameraName, bakeMeshUuid, width, height,
 
     $.ajax({
         url: rfarm.baseUrl  + "/v1/job",
-        data: { 
+        data: {
             session_guid: sessionGuid,
             camera_name: cameraName,
             // bake_mesh_uuid: bakeMeshUuid,
@@ -461,10 +466,10 @@ rfarm.render = function(cameraName, width, height, onStarted, onProgress, onImag
 
     $.ajax({
         url: this.baseUrl  + "/job",
-        data: { 
+        data: {
             session: this.sessionId,
-            width: width, 
-            height: height, 
+            width: width,
+            height: height,
             camera: cameraName,
             progressiveMaxRenderTime: 2.5,
             progressiveNoiseThreshold: 0.001
@@ -487,7 +492,7 @@ rfarm.cancelRender = function(jobGuid, onCanceled) {
 
     $.ajax({
         url: this.baseUrl  + "/job/" + jobGuid,
-        data: { 
+        data: {
             status: "canceled"
         },
         type: 'PUT',
@@ -507,7 +512,7 @@ rfarm.postScene = function(sessionGuid, sceneJson, onComplete) {
 
     $.ajax({
         url: this.baseUrl  + "/v1/three",
-        data: { 
+        data: {
             session_guid: sessionGuid,
             compressed_json: compressedSceneData
         },
@@ -528,7 +533,7 @@ rfarm.putCamera = function(sessionGuid, cameraJson, onComplete) {
 
     $.ajax({
         url: this.baseUrl  + "/v1/three/" + cameraJson.object.uuid,
-        data: { 
+        data: {
             session_guid: sessionGuid,
             compressed_json: compressedCameraData
         },
@@ -551,7 +556,7 @@ rfarm.postGeometries = function(sessionGuid, geometryJson, onComplete) {
 
     $.ajax({
         url: this.baseUrl  + "/v1/three/geometry",
-        data: { 
+        data: {
             session_guid: sessionGuid,
             compressed_json: compressedGeometryData,
             generate_uv2: false
@@ -606,7 +611,7 @@ rfarm._postMesh = function(parentName, geometryName, materialName, matrixWorldAr
 
     $.ajax({
         url: this.baseUrl  + "/scene/0/mesh",
-        data: { 
+        data: {
             session: this.sessionId,
             parentName: parentName,
             geometryName: geometryName,
@@ -623,6 +628,6 @@ rfarm._postMesh = function(parentName, geometryName, materialName, matrixWorldAr
         }.bind(this)
     });
 }.bind(rfarm);
- 
+
 */
 
