@@ -145,8 +145,8 @@ export default class Scene {
         // var p2 = __postTextures.call(this, texturesJson);
         // await Promise.all([p0, /*p1, p2*/]);
 
-        // var p3 = __postMaterials.call(this, materialsJson);
-        // await Promise.all([p3]);
+        var p3 = __postMaterials.call(this, materialsJson);
+        await Promise.all([p3]);
 
         await __postScene.call(this, sceneJson);
 
