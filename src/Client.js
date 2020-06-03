@@ -14,9 +14,9 @@ export default class Client {
         this.job = null;
     }
 
-    async openSession(workgroup, workspaceGuid, sceneFilename) {
+    async openSession(workgroup, workspaceGuid, sceneFilename, additionalParams) {
         this.session = new Session(this.baseUrl, this.apiKey);
-        return this.session.open(workgroup, workspaceGuid, sceneFilename);
+        return this.session.open(workgroup, workspaceGuid, sceneFilename, additionalParams);
     }
 
     async createScene(threejsSceneObj, threejsCameraObj) {

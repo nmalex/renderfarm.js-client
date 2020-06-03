@@ -13,7 +13,7 @@ export default class Session {
         return this.data ? this.data.guid : null;
     }
 
-    async open(workgroup, workspaceGuid, maxSceneFilename) {
+    async open(workgroup, workspaceGuid, maxSceneFilename, additonalParams) {
         return new Promise(async function(resolve, reject){
             try {
                 var response = await axios.post(this.baseUrl + '/session', {
@@ -21,6 +21,8 @@ export default class Session {
                     workgroup: workgroup,
                     workspace_guid: workspaceGuid,
                     scene_filename: maxSceneFilename,
+                    //
+                    debug: additonalParams && additonalParams.debug,
                 });
                 this.data = response.data.data;
                 resolve(this);
