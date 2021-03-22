@@ -7,4 +7,9 @@ module.exports = {
         filename: 'renderfarm.js',
         path: path.resolve(__dirname, 'dist'),
     },
+    devServer: {
+        contentBase: path.join(__dirname),
+        compress: true,
+        port: 3000,
+    },
 };

@@ -1,7 +1,7 @@
 var client = new RFJS.Client({
     apiKey: "75f5-4d53-b0f4",
-    protocol: "https",
-    host: "alengo3d.renderfarmjs.com",
+    protocol: "http",
+    host: "localhost",
     port: 8000,
 });
 

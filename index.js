@@ -6,7 +6,9 @@ function render(client,
                 renderCallbacks,
 ) {
     async function main() {
-        var session = await client.openSession(workspaceGuid, "empty.max");
+        var workgroup = "dev";
+        var additionalParams = {};
+        var session = await client.openSession(workgroup, workspaceGuid, "empty.max");
         renderCallbacks['sessionOpen'] ? renderCallbacks['sessionOpen'](session) : null;
         await session.refresh();
 
@@ -14,12 +16,12 @@ function render(client,
         renderCallbacks['sceneCreated'] ? renderCallbacks['sceneCreated'](scene) : null;
 
         var job = await client.createJob(
-            threejsCameraObj.name,
-            renderSettings.width,
-            renderSettings.height,
+            threejsCameraObj,
+            renderSettings,
             null, // onStarted
             null, // onProgress
-            renderCallbacks['renderComplete'],
+            renderCallbacks['renderComplete'], // onImageReady
+            null, // onError
         );
         renderCallbacks['jobCreated'] ? renderCallbacks['jobCreated'](job) : null;
     }
