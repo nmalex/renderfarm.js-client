@@ -5,7 +5,8 @@
   "main": "dist/renderfarm.js",
   "scripts": {
     "build": "webpack --config webpack.config.js",
-    "test": "jasmine --config=jasmine.json"
+    "test": "jasmine --config=jasmine.json",
+    "start:dev": "webpack serve"
   },
   "repository": {
     "type": "git",
@@ -25,8 +26,6 @@
   },
   "devDependencies": {
     "ftp": "^0.3.10",
-    "reflect-metadata": "^0.1.12",
-    "webpack": "^4.41.5",
-    "webpack-cli": "^3.3.10"
+    "reflect-metadata": "^0.1.12"
   }
 }

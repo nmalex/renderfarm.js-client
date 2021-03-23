@@ -185,42 +185,90 @@ async function __postGeometries(geometriesJson) {
 
     console.log("Posting geometries: ", geometriesJson);
 
-    const promises = [];
     const postQueue = geometriesJson.slice();
 
+    // check if some geometries may have been already cached
+    const cachedGeometries = {};
+    {
+        const promises = [];
+        for (let i in postQueue) {
+            let p = postQueue[i];
+
+            const geometryDataText = JSON.stringify(p.data);
+            const md5val = md5(geometryDataText);
+
+            const url = this.baseUrl + '/three/geometry/cache/'+md5val+`?session_guid=${this.sessionGuid}`;
+            console.log(` >> GET: `, url);
+
+            promises.push(axios.get(url).then(function(cached){
+                console.log(` >> cached: `, p.uuid, cached)
+                cachedGeometries[p.uuid] = { found: true, md5: md5val };
+            }).catch(function(err){
+                console.log(` >> not cached: `, p.uuid, md5val);
+                cachedGeometries[p.uuid] = { found: false, md5: md5val };
+            }));
+
+            if (promises.length > 16) {
+                await Promise.all(promises);
+                promises.splice(0, promises.length);
+            }
+        }
+
+        await Promise.all(promises);
+    }
+
+    const promises = [];
     while (postQueue.length > 0) {
         const geometryJson = postQueue.pop();
-        const geometryText = JSON.stringify(geometryJson);
 
-        var pr = new Promise(function (resolve, reject) {
-            var zip = new JSZip();
-            zip.file("BufferGeometry.json", geometryText);
-            zip.generateAsync({ type: "base64", compression: "DEFLATE", compressionOptions: { level: 9 } }, function updateCallback(metadata) {
-                if (metadata.currentFile) {
-                    //console.log(" >> progress: ", metadata.currentFile, metadata.percent.toFixed(2) + " %");
-                }
-            }).then(function (content) {
-                // see FileSaver.js
-                console.log(` >> compressed: `, geometryJson.uuid, content.length, geometryText.length, content.length / geometryText.length);
-                resolve(content);
-            });
+        if (cachedGeometries[geometryJson.uuid].found) {
 
-        }.bind(this)).then(function (content) {
             const url = this.baseUrl + '/three/geometry';
-            const compressedGeometryData = content;
-            console.log(` >> POST: `, url, content.length);
-            return axios.post(url, {
+            console.log(` >> POST: `, url, ` use from cache: ` + cachedGeometries[geometryJson.uuid].md5);
+            const pr = axios.post(url, {
                 session_guid: this.sessionGuid,
                 uuid: geometryJson.uuid,
-                compressed_json: compressedGeometryData,
+                use_cache: cachedGeometries[geometryJson.uuid].md5, // tell server to take uuid geometry from cache
                 // json: geometryText, // in case you prefer traffic over time
                 generate_uv2: false,
             });
-        }.bind(this));
 
-        promises.push(pr);
+            promises.push(pr);
+        } else {
 
-        if (promises.length > 16) {
+            const geometryText = JSON.stringify(geometryJson);
+            var pr = new Promise(function (resolve, reject) {
+                var zip = new JSZip();
+                zip.file("BufferGeometry.json", geometryText);
+                zip.generateAsync({ type: "base64", compression: "DEFLATE", compressionOptions: { level: 9 } }, function updateCallback(metadata) {
+                    if (metadata.currentFile) {
+                        //console.log(" >> progress: ", metadata.currentFile, metadata.percent.toFixed(2) + " %");
+                    }
+                }).then(function (content) {
+                    // see FileSaver.js
+                    console.log(` >> compressed: `, geometryJson.uuid, content.length, geometryText.length, content.length / geometryText.length);
+                    resolve(content);
+                });
+
+            }.bind(this)).then(function (content) {
+                const url = this.baseUrl + '/three/geometry';
+                const compressedGeometryData = content;
+                console.log(` >> POST: `, url, content.length);
+                return axios.post(url, {
+                    session_guid: this.sessionGuid,
+                    uuid: geometryJson.uuid,
+                    compressed_json: compressedGeometryData,
+                    store_cache: cachedGeometries[geometryJson.uuid].md5, // tell server that he has to cache this mesh for future
+                    // json: geometryText, // in case you prefer traffic over time
+                    generate_uv2: false,
+                });
+
+            }.bind(this));
+
+            promises.push(pr);
+        }
+
+        if (promises.length > 4) {
             await Promise.all(promises);
             promises.splice(0, promises.length);
         }
