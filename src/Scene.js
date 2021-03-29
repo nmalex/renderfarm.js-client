@@ -1,4 +1,3 @@
-// var THREE = require('three');
 var JSZip = require("jszip");
 const axios = require('axios');
 

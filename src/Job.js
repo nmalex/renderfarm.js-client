@@ -6,7 +6,7 @@ export default class Job {
         this.apiKey      = apiKey;
     }
 
-    async post(sessionGuid, threejsCameraObj, renderSettings) {
+    async post(sessionGuid, threejsCameraObj, renderSettings, vraySettings) {
         return new Promise(async function(resolve, reject) {
             try {
                 const cameraJson = threejsCameraObj.toJSON().object;
@@ -22,7 +22,7 @@ export default class Job {
                     render_height: renderSettings.height,
                     alpha: renderSettings.alpha,
                     camera_json: cameraJson,
-                    render_settings: renderSettings || {
+                    render_settings: vraySettings || {
                         // use it to pass direct vray settings
                     }
                 }, {
