@@ -27,6 +27,7 @@
         <script src="js/jquery.twentytwenty.js"></script>
 
         <script src="js/md5.js"></script>
+        <script src="js/axios.js"></script>
 
         <link href="css/foundation.css" rel="stylesheet" type="text/css" />
         <link href="css/twentytwenty.css" rel="stylesheet" type="text/css" />
@@ -47,7 +48,8 @@
 
         <!-- <div class="canvas-wrapper">
             <div class="toolbar">
-                <button id="btnSaveJson" onclick="saveJson(demo.scene, 'scene.json')">save JSON</button>
+                <input type="file" id="file" onchange="handleFileSelected(event)" aria-label="File browser example">
+                <button id="btnConvertStepFile" onclick="handleConvertStepFileClick()">Convert STEP File</button>
             </div>
         </div> -->
           

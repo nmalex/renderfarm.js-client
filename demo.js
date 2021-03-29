@@ -20,9 +20,13 @@ function handleRenderClick() {
         client,
         workspaceGuid,
         window.demo.scene,
-        window.demo.camera, 
-        {width: 640, height: 480}, 
+        window.demo.camera,
+        { width: 640, height: 480 },
         {
+            sessionOpen: () => handleStatusUpdate("Session is open"),
+            sceneCreated: () => handleStatusUpdate("Scene uploaded"),
+            jobCreated: () => handleStatusUpdate("Starting rendering..."),
+            renderProgress: handleRenderProgress,
             renderComplete: handleImageReady,
         }
     )
@@ -67,15 +71,15 @@ function initScene() {
         window.demo.controls = controls;
     }
 
-    var spotLight = new THREE.SpotLight( 0xffffff );
+    var spotLight = new THREE.SpotLight(0xffffff);
     spotLight.name = "SpotLight1";
-    spotLight.position.set( 10, 40, 10 );
-    spotLight.target.position.set( 0, 0, 0 );
+    spotLight.position.set(10, 40, 10);
+    spotLight.target.position.set(0, 0, 0);
     spotLight.angle = Math.PI / 10;
 
     spotLight.castShadow = true;
     spotLight.shadow.bias = 1e-6;
-    spotLight.shadow.mapSize.width  = 512;
+    spotLight.shadow.mapSize.width = 512;
     spotLight.shadow.mapSize.height = 512;
 
     spotLight.shadow.camera.near = 15;
@@ -85,37 +89,37 @@ function initScene() {
     scene.add(spotLight);
     window.demo.spotLight = spotLight;
 
-    var helper = new THREE.CameraHelper( spotLight.shadow.camera );
+    var helper = new THREE.CameraHelper(spotLight.shadow.camera);
     // scene.add( helper );
 
     var gridHelper = new THREE.GridHelper(4, 4);
     scene.add(gridHelper);
 
     var geometry = new THREE.BoxGeometry(1, 1, 1);
-        geometry = new THREE.BufferGeometry().fromGeometry(geometry);
+    geometry = new THREE.BufferGeometry().fromGeometry(geometry);
 
-    var materialWhite = new THREE.MeshPhongMaterial({ 
+    var materialWhite = new THREE.MeshPhongMaterial({
         name: "WhiteGlass",
         color: 0xffffff,
         transparent: false,
         opacity: 0.95,
     });
 
-    var materialRed = new THREE.MeshPhongMaterial({ 
+    var materialRed = new THREE.MeshPhongMaterial({
         name: "RedGlass",
         color: 0xff0000,
         transparent: false,
         opacity: 0.95,
     });
 
-    var materialGreen = new THREE.MeshPhongMaterial({ 
+    var materialGreen = new THREE.MeshPhongMaterial({
         name: "GreenGlass",
         color: 0x00ff00,
         transparent: false,
         opacity: 0.95
     });
 
-    var materialBlue = new THREE.MeshPhongMaterial({ 
+    var materialBlue = new THREE.MeshPhongMaterial({
         name: "BlueGlass",
         color: 0x0000ff,
         transparent: false,
@@ -131,9 +135,9 @@ function initScene() {
 
     var loader = new THREE.FontLoader();
 
-    loader.load( 'http://mbnsay.com/rayys/assets/fonts/helvetiker_regular.typeface.json', function ( font ) {
-    
-        let textGeometry = new THREE.TextGeometry( 'Hello three.js!', {
+    loader.load('fonts/helvetiker_regular.typeface.json', function (font) {
+
+        let textGeometry = new THREE.TextGeometry('Hello three.js!', {
             font: font,
             size: 1.5,
             height: 0.5,
@@ -147,7 +151,7 @@ function initScene() {
 
         var text = new THREE.Mesh(textGeometry, materialWhite);
         text.name = "Text";
-        text.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI/2));
+        text.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
         text.applyMatrix(new THREE.Matrix4().makeTranslation(-5.5, 0, 2.1));
         text.castShadow = true;
         text.receiveShadow = false;
@@ -176,41 +180,41 @@ function initScene() {
     cubey.add(cubez);
     // =============
 
-    var roomGeometry = new THREE.BoxGeometry( 100, 80, 100 );
+    var roomGeometry = new THREE.BoxGeometry(100, 80, 100);
     // invert the geometry on the x-axis so that all of the faces point inward
-    roomGeometry.scale( - 1, 1, 1 );
+    roomGeometry.scale(- 1, 1, 1);
     roomGeometry = new THREE.BufferGeometry().fromGeometry(roomGeometry);
 
-    var roomMaterial = new THREE.MeshBasicMaterial( {
+    var roomMaterial = new THREE.MeshBasicMaterial({
         color: 0xA9A0A2
-    } );
+    });
 
-    let roomMesh = new THREE.Mesh( roomGeometry, roomMaterial );
+    let roomMesh = new THREE.Mesh(roomGeometry, roomMaterial);
     roomMesh.name = "Room001";
-    roomMesh.applyMatrix(new THREE.Matrix4().makeTranslation(0,39.9,0));
+    roomMesh.applyMatrix(new THREE.Matrix4().makeTranslation(0, 39.9, 0));
     roomMesh.castShadow = false;
     roomMesh.receiveShadow = true;
     // scene.add( roomMesh );
 
-    var planeGeometry = new THREE.PlaneGeometry( 15, 15, 1 );
-        planeGeometry = new THREE.BufferGeometry().fromGeometry(planeGeometry);
+    var planeGeometry = new THREE.PlaneGeometry(15, 15, 1);
+    planeGeometry = new THREE.BufferGeometry().fromGeometry(planeGeometry);
     var material = new THREE.MeshPhongMaterial({
         name: "Floor",
-        color: 0xf0ffff, 
+        color: 0xf0ffff,
         transparent: true,
         opacity: 0.5,
         side: THREE.DoubleSide
     });
 
-    var plane = new THREE.Mesh( planeGeometry, material );
+    var plane = new THREE.Mesh(planeGeometry, material);
     plane.name = "Plane0";
-    plane.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI/2));
-    plane.applyMatrix(new THREE.Matrix4().makeTranslation(0,0,0));
+    plane.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
+    plane.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
     plane.castShadow = false;
     plane.receiveShadow = true;
     scene.add(plane);
 
-    var animate = function() {
+    var animate = function () {
         requestAnimationFrame(animate);
         controls.update();
         renderer.render(scene, camera);
@@ -221,4 +225,50 @@ function initScene() {
 
 function handleImageReady(url) {
     $("#vray").attr("src", url);
+    $("#renderStatus").text("Complete!");
+}
+
+function handleRenderProgress(data) {
+    $("#renderStatus").text(data.vrayProgress);
+}
+
+function handleStatusUpdate(val) {
+    $("#renderStatus").text(val);
+}
+
+function render(client,
+    workspaceGuid,
+    threejsSceneObj,
+    threejsCameraObj,
+    renderSettings,
+    renderCallbacks,
+) {
+    async function main() {
+        var workgroup = "dev";
+        var vraySettings = {};
+        var session = await client.openSession(workgroup, workspaceGuid, "empty.max");
+        renderCallbacks['sessionOpen'] ? renderCallbacks['sessionOpen'](session) : null;
+        await session.refresh();
+
+        var scene = await client.createScene(threejsSceneObj, threejsCameraObj);
+        renderCallbacks['sceneCreated'] ? renderCallbacks['sceneCreated'](scene) : null;
+
+        var job = await client.createJob(
+            threejsCameraObj,
+            renderSettings,
+            vraySettings,
+            {
+                onProgress: renderCallbacks['renderProgress'],
+                onImageReady: renderCallbacks['renderComplete'],
+            }
+        );
+        renderCallbacks['jobCreated'] ? renderCallbacks['jobCreated'](job) : null;
+    }
+
+    main().then(function () {
+        // that's ok!
+    }).catch(function (err) {
+        console.error(err);
+        renderCallbacks['error'] ? renderCallbacks['error'](err) : null;
+    });
 }

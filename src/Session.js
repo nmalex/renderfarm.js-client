@@ -54,6 +54,9 @@ export default class Session {
             if (!this.data) {
                 reject(new Error("session closed"));
             }
+            if (this.data.closed) {
+                resolve(this);
+            }
             try {
                 var response = await axios.delete(this.baseUrl + '/session/' + this.data.guid, {});
                 this.data = response.data.data;

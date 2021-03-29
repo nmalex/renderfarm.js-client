@@ -12,6 +12,8 @@ export default class Client {
         this.session = null;
         this.scene = null;
         this.job = null;
+
+        this.autoCloseSession = true; // close session once job is done
     }
 
     async openSession(workgroup, workspaceGuid, sceneFilename, additionalParams) {
@@ -24,26 +26,29 @@ export default class Client {
         return this.scene.post(this.session.guid, threejsSceneObj, threejsCameraObj);
     }
 
-    async createJob(threejsCameraObj, renderSettings, onStarted, onProgress, onImageReady, onError) {
+    async createJob(threejsCameraObj, renderSettings, vraySettings, callbacks) {
         this.job = new Job(this.baseUrl, this.apiKey);
 
-        var promise = this.job.post(this.session.guid, threejsCameraObj, renderSettings);
+        var promise = this.job.post(this.session.guid, threejsCameraObj, renderSettings, vraySettings);
         promise.then(async function () {
 
             var jobInfo = await this.job.get();
-            onStarted && onStarted(jobInfo.data);
+            callbacks && callbacks.onStarted && callbacks.onStarted(jobInfo.data);
 
             var interval = setInterval(async function () {
                 var jobInfo = await this.job.get();
                 if (jobInfo.data.state !== 'rendering' && jobInfo.data.state !== 'pending') {
                     clearInterval(interval);
+                    if (this.autoCloseSession) {
+                        this.session.close(); // auto close session
+                    }
                     if (jobInfo.data.urls && jobInfo.data.urls.length > 0) {
-                        onImageReady && onImageReady(jobInfo.data.urls[0]);
+                        callbacks && callbacks.onImageReady && callbacks.onImageReady(jobInfo.data.urls[0]);
                     } else {
-                        onError && onError(jobInfo.data);
+                        callbacks && callbacks.onError && callbacks.onError(jobInfo.data);
                     }
                 } else {
-                    onProgress && onProgress(jobInfo.data);
+                    callbacks && callbacks.onProgress && callbacks.onProgress(jobInfo.data);
                 }
             }.bind(this), 1250); // check job state interval
 
