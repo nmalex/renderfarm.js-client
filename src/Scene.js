@@ -197,13 +197,13 @@ async function __postGeometries(geometriesJson) {
             const geometryDataText = JSON.stringify(p.data);
             const md5val = md5(geometryDataText);
 
-            const url = this.baseUrl + '/three/geometry/cache/'+md5val+`?session_guid=${this.sessionGuid}`;
+            const url = this.baseUrl + '/three/geometry/cache/' + md5val + `?session_guid=${this.sessionGuid}`;
             console.log(` >> GET: `, url);
 
-            promises.push(axios.get(url).then(function(cached){
+            promises.push(axios.get(url).then(function (cached) {
                 console.log(` >> cached: `, p.uuid, cached)
                 cachedGeometries[p.uuid] = { found: true, md5: md5val };
-            }).catch(function(err){
+            }).catch(function (err) {
                 console.log(` >> not cached: `, p.uuid, md5val);
                 cachedGeometries[p.uuid] = { found: false, md5: md5val };
             }));
@@ -224,13 +224,13 @@ async function __postGeometries(geometriesJson) {
         if (cachedGeometries[geometryJson.uuid].found) {
 
             const url = this.baseUrl + '/three/geometry';
-            console.log(` >> POST: `, url, ` use from cache: ` + cachedGeometries[geometryJson.uuid].md5);
+            // console.log(` >> POST: `, url, ` use from cache: ` + cachedGeometries[geometryJson.uuid].md5);
             const pr = axios.post(url, {
                 session_guid: this.sessionGuid,
                 uuid: geometryJson.uuid,
                 use_cache: cachedGeometries[geometryJson.uuid].md5, // tell server to take uuid geometry from cache
                 // json: geometryText, // in case you prefer traffic over time
-                generate_uv2: false,
+                // generate_uv2: false,
             });
 
             promises.push(pr);
@@ -260,7 +260,7 @@ async function __postGeometries(geometriesJson) {
                     compressed_json: compressedGeometryData,
                     store_cache: cachedGeometries[geometryJson.uuid].md5, // tell server that he has to cache this mesh for future
                     // json: geometryText, // in case you prefer traffic over time
-                    generate_uv2: false,
+                    // generate_uv2: false,
                 });
 
             }.bind(this));
