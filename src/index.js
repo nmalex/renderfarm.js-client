@@ -1,7 +1,8 @@
 import Client from './Client'
 
-(function(g){
+(function (g) {
     g.RFJS = {
         Client: Client
     };
 }(global))
+

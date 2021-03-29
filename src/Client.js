@@ -5,7 +5,7 @@ import Job from './Job'
 export default class Client {
     constructor(config) {
         const protocol = config.protocol ? config.protocol : "https";
-        const port     = config.port     ? config.port     :  443;
+        const port = config.port ? config.port : 443;
 
         this.apiKey = config.apiKey;
         this.baseUrl = protocol + "://" + config.host + ":" + port + "/v1";
@@ -28,17 +28,45 @@ export default class Client {
         this.job = new Job(this.baseUrl, this.apiKey);
 
         var promise = this.job.post(this.session.guid, threejsCameraObj, renderSettings);
-        promise.then(async function(){
+        promise.then(async function () {
 
             var jobInfo = await this.job.get();
             onStarted && onStarted(jobInfo.data);
 
-            var interval = setInterval(async function(){
+            var interval = setInterval(async function () {
                 var jobInfo = await this.job.get();
-                if (jobInfo.data.state !== 'rendering') {
+                if (jobInfo.data.state !== 'rendering' && jobInfo.data.state !== 'pending') {
                     clearInterval(interval);
                     if (jobInfo.data.urls && jobInfo.data.urls.length > 0) {
                         onImageReady && onImageReady(jobInfo.data.urls[0]);
+                    } else {
+                        onError && onError(jobInfo.data);
+                    }
+                } else {
+                    onProgress && onProgress(jobInfo.data);
+                }
+            }.bind(this), 1250); // check job state interval
+
+        }.bind(this));
+
+        return promise;
+    }
+
+    async createJobConvert(fileUrl, convertSettings, onStarted, onProgress, onResultReady, onError) {
+        this.job = new Job(this.baseUrl, this.apiKey);
+
+        var promise = this.job.postConvert(this.session.guid, fileUrl, convertSettings);
+        promise.then(async function () {
+
+            var jobInfo = await this.job.get();
+            onStarted && onStarted(jobInfo.data);
+
+            var interval = setInterval(async function () {
+                var jobInfo = await this.job.get();
+                if (jobInfo.data.state !== 'processing' && jobInfo.data.state !== 'pending') {
+                    clearInterval(interval);
+                    if (jobInfo.data.urls && jobInfo.data.urls.length > 0) {
+                        onImageReady && onResultReady(jobInfo.data.urls[0]);
                     } else {
                         onError && onError(jobInfo.data);
                     }
