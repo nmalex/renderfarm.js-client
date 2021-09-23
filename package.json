@@ -1,37 +1,60 @@
 {
-  "name": "renderfarm",
-  "version": "1.1.25",
-  "description": "three.js server side rendering client",
-  "main": "src/module.js",
+  "name": "my-awesome-greeter",
+  "version": "1.0.2",
+  "description": "A nice greeter",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
-    "build": "webpack --config webpack.config.js",
-    "test": "jasmine --config=jasmine.json",
-    "serve": "webpack serve"
+    "test": "jest --config jestconfig.json",
+    "build": "tsc",
+    "webpack": "webpack",
+    "uglify": "uglifyjs --compress --mangle --output ./dist/index.min.js ./dist/index_bundle.js",
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+    "lint": "tslint -p tsconfig.json",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run lint",
+    "preversion": "npm run lint",
+    "version": "npm run format && git add -A src",
+    "postversion": "git push && git push --tags"
   },
-  "files": [
-    "dist/renderfarm.min.js",
-    "src/*.js"
-  ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nmalex/renderfarm.js-client.git"
+    "url": "git+https://github.com/caki0915/my-awesome-greeter.git"
   },
-  "author": "master.irven@gmail.com",
-  "license": "MIT",
+  "keywords": [
+    "Hello",
+    "Greeter"
+  ],
+  "author": "C-J",
+  "license": "ISC",
   "bugs": {
-    "url": "https://github.com/nmalex/renderfarm.js-client/issues"
+    "url": "https://github.com/caki0915/my-awesome-greeter/issues"
   },
-  "homepage": "https://github.com/nmalex/renderfarm.js-client#readme",
-  "dependencies": {
-    "axios": "^0.18.0",
-    "jszip": "^3.2.2",
-    "lz-string": "^1.4.4"
-  },
+  "homepage": "https://github.com/caki0915/my-awesome-greeter#readme",
   "devDependencies": {
-    "ftp": "^0.3.10",
-    "reflect-metadata": "^0.1.12",
-    "webpack": "^5.28.0",
-    "webpack-cli": "^4.6.0",
-    "webpack-dev-server": "^3.11.2"
+    "@babel/core": "^7.15.5",
+    "@babel/preset-env": "^7.15.6",
+    "@types/jest": "^22.2.3",
+    "babel-loader": "^8.2.2",
+    "codecov": "^3.1.0",
+    "jest": "^23.6.0",
+    "prettier": "^1.13.2",
+    "ts-jest": "^22.4.6",
+    "tslint": "^5.10.0",
+    "tslint-config-prettier": "^1.13.0",
+    "typescript": "^2.8.3",
+    "uglify-js": "^3.14.2",
+    "webpack": "^5.53.0",
+    "webpack-cli": "^4.8.0"
+  },
+  "files": [
+    "lib/**/*"
+  ],
+  "dependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/md5": "^2.3.1",
+    "axios": "^0.21.4",
+    "jszip": "^3.7.1",
+    "md5": "^2.3.0"
   }
 }

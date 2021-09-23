@@ -1,4 +1,3 @@
-node_modules/
-bundle/*.js
-package-lock.json
-ftp_settings.js
+node_modules
+/lib
+/coverage

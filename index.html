@@ -1,81 +1,16 @@
 <!DOCTYPE html>
-<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
-<!--[if lt IE 7 ]> <html class="ie6" lang="en"> <![endif]-->
-<!--[if IE 7 ]>    <html class="ie7" lang="en"> <![endif]-->
-<!--[if IE 8 ]>    <html class="lt-ie9" lang="en"> <![endif]-->
-<!--[if IE 9 ]>    <html class="lt-ie10" lang="en"> <![endif]-->
-<!--[if (gte IE 9)|!(IE)]><!--> <html lang="en"> <!--<![endif]-->
-    <head>
-        <meta charset="utf-8" />
-        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-        <title>renderfarm.js - demo</title>
-
-        <meta name="robots" content="noindex, nofollow">
-        <meta name="googlebot" content="noindex, nofollow">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-        <script
-            src="https://code.jquery.com/jquery-3.2.1.js"
-            integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
-            crossorigin="anonymous"></script>
-
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.js"></script>
-        <script type="text/javascript" src="js/controls/OrbitControls.js"></script>
-        <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-
-        <script src="js/jquery.event.move.js"></script>
-        <script src="js/jquery.twentytwenty.js"></script>
-
-        <script src="js/md5.js"></script>
-        <script src="js/axios.js"></script>
-
-        <link href="css/foundation.css" rel="stylesheet" type="text/css" />
-        <link href="css/twentytwenty.css" rel="stylesheet" type="text/css" />
-        <link href="css/main.css" rel="stylesheet" type="text/css" />
-    </head>
-    <body onload="handleLoad(event)" onbeforeunload="handleBeforeUnload(event)" > <!-- closeSession(demo.sessionGuid) -->
-        <div class="canvas-wrapper">
-            <div class="toolbar">
-                <button id="btnRender" onclick="handleRenderClick()">Render</button>
-                <div id="renderStatus" class="status"></div>
-            </div>
-        </div>
-
-        <div class="twentytwenty-container" style="width: 640px;">
-            <canvas id="viewport"></canvas>
-            <img id="vray" src="img/vray.png" />
-        </div>
-
-        <!-- <div class="canvas-wrapper">
-            <div class="toolbar">
-                <input type="file" id="file" onchange="handleFileSelected(event)" aria-label="File browser example">
-                <button id="btnConvertStepFile" onclick="handleConvertStepFileClick()">Convert STEP File</button>
-            </div>
-        </div> -->
-          
-        <script>
-            $(function(){
-                $(".twentytwenty-container[data-orientation!='vertical']").twentytwenty({default_offset_pct: 0.7});
-                $(".twentytwenty-handle").each(function(i, el) {
-                    el.addEventListener("mouseenter", function(e) {
-                        demo.controls.enabled = false;
-                    });
-                    el.addEventListener("mouseleave", function(e) {
-                        demo.controls.enabled = true;
-                    });
-                });
-            });
-        </script>
-
-        <script>
-            module = {};
-        </script>
-
-        <script src="js/FileSaver.js"></script>
-        <script src="js/lz-string.min.js"></script>
-
-        <script src="./dist/renderfarm.min.js"></script>
-        <script src="./demo.js"></script>
-        <script src="./index.js"></script>
-    </body>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Demo</title>
+  </head>
+  <body>
+    <script src="dist/index.min.js"></script>
+    <script>
+      console.log($)
+      alert($.capital("hridayesh"))
+      $.addDOMContent("Well It Works Fine!!!")
+    </script>
+  </body>
 </html>

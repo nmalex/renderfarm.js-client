@@ -1,7 +1,16 @@
-var JSZip = require("jszip");
-const axios = require('axios');
+import * as JSZip from 'jszip';
+import axios from 'axios';
+import * as md5 from 'md5';
 
 export default class Scene {
+    private baseUrl: string;
+    private apiKey: string;
+    private sessionGuid: string;
+
+    private geometries: any;
+    private materials: any;
+    private nodes: any;
+
     constructor(baseUrl, apiKey) {
         this.baseUrl = baseUrl;
         this.apiKey = apiKey;
@@ -11,12 +20,12 @@ export default class Scene {
         this.nodes = {};       // here we map scene nodes         <==> backend nodes
     }
 
-    async post(sessionGuid, threejsSceneObj, threejsCameraObj) {
+    async post(sessionGuid: string, threejsSceneObj: any, threejsCameraObj: any) {
         this.sessionGuid = sessionGuid;
 
         const userDataBackup = {};
         // first remove userData objects that may cause circular references
-        threejsSceneObj.traverse(function (child) {
+        threejsSceneObj.traverse(function (child: any) {
             if (child.userData) {
                 const userDataKeys = Object.keys(child.userData);
                 if (userDataKeys.length > 0) {
@@ -75,7 +84,7 @@ export default class Scene {
             delete sceneJson.images;
         }
 
-        function __collectGeometries(node, target) {
+        function __collectGeometries(node: any, target: any) {
             if (!node) return;
             if (node.geometry && !target[node.geometry.uuid] && node.geometry.type && node.geometry.type.indexOf("BufferGeometry") !== -1) {
                 if (node.geometry && node.geometry.renderable === false
@@ -111,7 +120,7 @@ export default class Scene {
         var sceneGeometries = {};
         __collectGeometries(threejsSceneObj, sceneGeometries);
 
-        function __removeNotRenderable(node) {
+        function __removeNotRenderable(node: any) {
             if (!node) return;
 
             if (node.geometry && node.geometry.renderable === false
@@ -154,14 +163,14 @@ export default class Scene {
 }
 
 // node constructor, maps threejs node ref to 3ds max node name
-function __rfarmNode(threeNodeRef, maxNodeName) {
+function __rfarmNode(threeNodeRef: any, maxNodeName: string) {
     return {
         threeNodeRef: threeNodeRef,
         maxNodeName: maxNodeName
     };
 }
 
-async function __postGeometries(geometriesJson) {
+async function __postGeometries(geometriesJson: any) {
 
     for (const i in geometriesJson) {
         if (!geometriesJson[i].type) {

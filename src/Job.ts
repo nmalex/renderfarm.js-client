@@ -1,12 +1,16 @@
-const axios = require('axios');
+import axios from 'axios';
+import { IConvertSettings, IRenderSettings } from './interfaces';
 
 export default class Job {
-    constructor(baseUrl, apiKey) {
+    private baseUrl: string;
+    private apiKey: string;
+
+    constructor(baseUrl: string, apiKey: string) {
         this.baseUrl     = baseUrl;
         this.apiKey      = apiKey;
     }
 
-    async post(sessionGuid, threejsCameraObj, renderSettings, vraySettings) {
+    async post(sessionGuid: string, threejsCameraObj: any, renderSettings: IRenderSettings, vraySettings) {
         return new Promise(async function(resolve, reject) {
             try {
                 const cameraJson = threejsCameraObj.toJSON().object;
@@ -37,7 +41,7 @@ export default class Job {
         }.bind(this));
     }
 
-    async postConvert(sessionGuid, fileUrl, convertSettings) {
+    async postConvert(sessionGuid: string, fileUrl: string, convertSettings: IConvertSettings) {
         return new Promise(async function(resolve, reject) {
             try {
                 var response = await axios.post(this.baseUrl + '/job/convert', {
@@ -60,7 +64,7 @@ export default class Job {
     }
 
     async get() {
-        return new Promise(async function(resolve, reject) {
+        return new Promise(async function(resolve: Function, reject: Function) {
             try {
                 var response = await axios.get(this.baseUrl + '/job/' + this.data.guid, {});
                 this.data = response.data.data;
