@@ -101,11 +101,3 @@ export default class Client {
         return this.session.close();
     }
 }
-function setInterval(arg0: any, arg1: number) {
-    throw new Error('Function not implemented.');
-}
-
-function clearInterval(interval: void) {
-    throw new Error('Function not implemented.');
-}
-

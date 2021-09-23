@@ -1,6 +1,8 @@
 import * as JSZip from 'jszip';
 import axios from 'axios';
 import * as md5 from 'md5';
+import * as LZString from 'lz-string';
+import * as THREE from 'three';
 
 export default class Scene {
     private baseUrl: string;

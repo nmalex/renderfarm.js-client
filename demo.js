@@ -1,8 +1,8 @@
 var client = new RFJS.Client({
     apiKey: "75f5-4d53-b0f4",
-    protocol: "http",
-    host: "localhost",
-    port: 8000,
+    protocol: "https",
+    host: "api2.renderfarmjs.com",
+    port: 443,
 });
 
 var workspaceGuid = "55a0bd33-9f15-4bc0-a482-17899eb67af3";
@@ -224,16 +224,16 @@ function initScene() {
 }
 
 function handleImageReady(url) {
-    $("#vray").attr("src", url);
-    $("#renderStatus").text("Complete!");
+    jQuery("#vray").attr("src", url);
+    jQuery("#renderStatus").text("Complete!");
 }
 
 function handleRenderProgress(data) {
-    $("#renderStatus").text(data.vrayProgress);
+    jQuery("#renderStatus").text(data.vrayProgress);
 }
 
 function handleStatusUpdate(val) {
-    $("#renderStatus").text(val);
+    jQuery("#renderStatus").text(val);
 }
 
 function render(client,

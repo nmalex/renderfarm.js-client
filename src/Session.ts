@@ -1,20 +1,22 @@
-const axios = require('axios');
-
-import Scene from './Scene'
+import axios from 'axios';
 
 export default class Session {
-    constructor(baseUrl, apiKey) {
+    private baseUrl: string;
+    private apiKey: string;
+    private data: any;
+
+    constructor(baseUrl: string, apiKey: string) {
         this.baseUrl = baseUrl;
         this.apiKey  = apiKey;
         this.data = null;
     }
 
-    get guid() {
+    get guid(): string {
         return this.data ? this.data.guid : null;
     }
 
-    async open(workgroup, workspaceGuid, maxSceneFilename, additonalParams) {
-        return new Promise(async function(resolve, reject){
+    async open(workgroup: string, workspaceGuid: string, maxSceneFilename: string, additonalParams: any) {
+        return new Promise(async function(resolve: Function, reject: Function){
             try {
                 var response = await axios.post(this.baseUrl + '/session', {
                     api_key: this.apiKey,
@@ -30,11 +32,11 @@ export default class Session {
                 this.error = err;
                 reject(err);
             }
-        }.bind(this))
+        }.bind(this));
     }
 
     async refresh() {
-        return new Promise(async function(resolve, reject){
+        return new Promise(async function(resolve: Function, reject: Function){
             if (!this.data) {
                 reject(new Error("session closed"));
             }
@@ -50,7 +52,7 @@ export default class Session {
     }
 
     async close() {
-        return new Promise(async function(resolve, reject){
+        return new Promise(async function(resolve: Function, reject: Function){
             if (!this.data) {
                 reject(new Error("session closed"));
             }
