@@ -21,7 +21,8 @@ export default class Job {
                     render_height: renderSettings.height,
                     alpha: renderSettings.alpha,
                     camera_json: cameraJson,
-                    render_settings: renderSettings.vray || {} // use it to pass direct vray settings
+                    // use it to pass direct settings to the renderer
+                    render_settings: renderSettings.render_settings || {}
                 }, {
                     timeout: 15*60*1000, // 15min timeout
                 });
